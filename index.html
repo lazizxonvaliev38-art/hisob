@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Ҳисоб</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root {
+    --bg: var(--tg-theme-bg-color, #ffffff);
+    --bg2: var(--tg-theme-secondary-bg-color, #f2f3f5);
+    --text: var(--tg-theme-text-color, #111111);
+    --hint: var(--tg-theme-hint-color, #8a8f98);
+    --btn: var(--tg-theme-button-color, #2481cc);
+    --btn-text: var(--tg-theme-button-text-color, #ffffff);
+    --red: #e5484d;
+    --green: #2f9e44;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; padding: 12px 16px 90px; background: var(--bg); color: var(--text);
+         font: 16px/1.4 -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .seg { display: flex; background: var(--bg2); border-radius: 12px; padding: 4px; margin-bottom: 14px; }
+  .seg button { flex: 1; border: 0; background: none; padding: 9px 4px; border-radius: 9px; font-size: 15px;
+         font-weight: 600; color: var(--hint); }
+  .seg button.on { background: var(--btn); color: var(--btn-text); }
+  .seg.kind button.on[data-kind=expense] { background: var(--red); color: #fff; }
+  .seg.kind button.on[data-kind=income] { background: var(--green); color: #fff; }
+  .page { display: none; } .page.on { display: block; }
+  label { display: block; font-size: 13px; color: var(--hint); margin: 14px 0 6px; }
+  .row { display: flex; gap: 8px; }
+  input { width: 100%; min-width: 0; border: 0; background: var(--bg2); color: var(--text); border-radius: 12px;
+          padding: 13px 14px; font-size: 17px; outline: none; font-family: inherit; }
+  #sum { font-size: 28px; font-weight: 700; }
+  .cur { display: flex; background: var(--bg2); border-radius: 12px; padding: 4px; }
+  .cur button { border: 0; background: none; padding: 0 14px; border-radius: 9px; font-weight: 600;
+                color: var(--hint); font-size: 15px; }
+  .cur button.on { background: var(--btn); color: var(--btn-text); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { border: 0; background: var(--bg2); color: var(--text); padding: 8px 12px; border-radius: 18px; font-size: 14px; }
+  .chip.on { background: var(--btn); color: var(--btn-text); }
+  .big { width: 100%; margin-top: 20px; border: 0; border-radius: 12px; padding: 15px;
+         background: var(--btn); color: var(--btn-text); font-size: 17px; font-weight: 600; }
+  .tip { margin-top: 14px; font-size: 13px; color: var(--hint); text-align: center; }
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .card { background: var(--bg2); border-radius: 14px; padding: 12px; }
+  .card.wide { grid-column: 1 / -1; }
+  .card .k { font-size: 12px; color: var(--hint); }
+  .card .v { font-size: 20px; font-weight: 700; margin-top: 2px; }
+  .inc { color: var(--green); } .exp { color: var(--red); }
+  h3 { font-size: 15px; margin: 18px 0 8px; }
+  .bar { margin: 8px 0; }
+  .bar .top { display: flex; justify-content: space-between; font-size: 14px; }
+  .bar .track { height: 8px; background: var(--bg2); border-radius: 4px; margin-top: 4px; overflow: hidden; }
+  .bar .fill { height: 100%; background: var(--red); border-radius: 4px; }
+  .day { font-size: 13px; color: var(--hint); margin: 14px 0 4px; }
+  .item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--bg2); }
+  .item .t { flex: 1; min-width: 0; }
+  .item .t b { display: block; font-weight: 600; font-size: 15px; }
+  .item .t span { display: block; font-size: 13px; color: var(--hint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item .a { font-weight: 700; white-space: nowrap; }
+  .item .x { border: 0; background: var(--bg2); color: var(--hint); width: 32px; height: 32px; border-radius: 16px; font-size: 16px; }
+  .empty { text-align: center; color: var(--hint); padding: 40px 0; }
+  .stale { font-size: 12px; color: var(--hint); text-align: center; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+  <div class="seg tabs">
+    <button data-page="add" class="on">➕ Қўшиш</button>
+    <button data-page="list">📋 Рўйхат</button>
+    <button data-page="rep">📊 Ҳисобот</button>
+  </div>
+
+  <div class="page on" id="add">
+    <div class="seg kind">
+      <button data-kind="expense" class="on">➖ Харажат</button>
+      <button data-kind="income">➕ Тушум</button>
+    </div>
+    <label>Сумма</label>
+    <div class="row">
+      <input id="sum" inputmode="numeric" placeholder="0" autocomplete="off">
+      <div class="cur">
+        <button data-cur="сўм" class="on">сўм</button>
+        <button data-cur="$">$</button>
+      </div>
+    </div>
+    <label id="whatLabel">Нимага</label>
+    <div class="chips" id="chips"></div>
+    <label>Изоҳ</label>
+    <input id="note" placeholder="Масалан: нон, бензин, ойлик…" autocomplete="off" maxlength="200">
+    <label>Сана</label>
+    <input id="day" type="date">
+    <button class="big" id="save" style="display:none">Сақлаш</button>
+    <div class="tip">🎤 Овоз билан ҳам бўлади: ботга «нонга 10 минг сўм харажат» деб овозли хабар юборинг.</div>
+  </div>
+
+  <div class="page" id="list"></div>
+  <div class="page" id="rep"></div>
+
+<script>
+  const tg = window.Telegram && Telegram.WebApp;
+  const $ = (id) => document.getElementById(id);
+  const DEF = {
+    expense: ["Овқат", "Нон", "Бензин", "Свет", "Газ", "Сув", "Телефон", "Уй", "Болаларга", "Дори", "Кийим", "Транспорт"],
+    income: ["Ойлик", "Магазиндан", "Снабженность", "Программадан", "WB дан", "Абонемент"]
+  };
+  // Data comes from the bot inside the URL fragment: #d=<base64url(JSON)>
+  let D = null;
+  try {
+    const m = location.hash.match(/d=([A-Za-z0-9_-]+)/);
+    if (m) {
+      const b = atob(m[1].replace(/-/g, "+").replace(/_/g, "/"));
+      D = JSON.parse(new TextDecoder().decode(Uint8Array.from(b, (c) => c.charCodeAt(0))));
+    }
+  } catch (e) { D = null; }
+
+  let kind = "expense", cur = "сўм", chip = "";
+  const fmt = (n, c) => Math.abs(n).toLocaleString("ru-RU").replace(/ |,/g, " ") + (c === "$" ? " $" : " сўм");
+  const today = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  function send(obj) {
+    const s = JSON.stringify(obj);
+    if (tg && tg.sendData) { tg.HapticFeedback && tg.HapticFeedback.notificationOccurred("success"); tg.sendData(s); }
+    else alert(s);
+  }
+
+  // ---------- add page
+  function cats() {
+    const mine = (D && D.c && D.c[kind === "expense" ? "e" : "i"]) || [];
+    return [...new Set([...mine, ...DEF[kind]])].slice(0, 16);
+  }
+  function drawChips() {
+    $("chips").innerHTML = "";
+    $("whatLabel").textContent = kind === "expense" ? "Нимага" : "Қаердан";
+    for (const c of cats()) {
+      const b = document.createElement("button");
+      b.className = "chip" + (c === chip ? " on" : "");
+      b.textContent = c;
+      b.onclick = () => { chip = chip === c ? "" : c; drawChips(); refresh(); };
+      $("chips").appendChild(b);
+    }
+  }
+  const amount = () => parseInt($("sum").value.replace(/\D/g, ""), 10) || 0;
+  let page = "add";
+  function refresh() {
+    const ok = page === "add" && amount() > 0 && (chip || $("note").value.trim());
+    const color = kind === "expense" ? "#e5484d" : "#2f9e44";
+    if (tg && tg.MainButton && tg.initData) {
+      tg.MainButton.setParams({ text: kind === "expense" ? "Харажатни сақлаш" : "Тушумни сақлаш", color });
+      ok ? tg.MainButton.show() : tg.MainButton.hide();
+    } else {
+      $("save").style.display = ok ? "block" : "none";
+    }
+  }
+  $("sum").addEventListener("input", () => {
+    const n = amount();
+    $("sum").value = n ? n.toLocaleString("ru-RU").replace(/ |,/g, " ") : "";
+    refresh();
+  });
+  $("note").addEventListener("input", refresh);
+  $("day").value = today();
+  document.querySelectorAll(".kind button").forEach((t) => t.onclick = () => {
+    document.querySelectorAll(".kind button").forEach((x) => x.classList.remove("on"));
+    t.classList.add("on"); kind = t.dataset.kind; chip = ""; drawChips(); refresh();
+  });
+  document.querySelectorAll(".cur button").forEach((b) => b.onclick = () => {
+    document.querySelectorAll(".cur button").forEach((x) => x.classList.remove("on"));
+    b.classList.add("on"); cur = b.dataset.cur;
+  });
+  function submit() {
+    if (page !== "add" || !amount()) return;
+    send({ a: "add", kind, amount: amount(), cur, cat: chip, note: $("note").value.trim(), day: $("day").value || today() });
+  }
+  $("save").onclick = submit;
+
+  // ---------- list page
+  function drawList() {
+    const el = $("list");
+    if (!D) { el.innerHTML = '<div class="empty">Маълумот йўқ. Ботда «📒 Ҳисоб» тугмасини қайта босинг.</div>'; return; }
+    let h = `<div class="stale">${esc(D.t)} · охирги ${D.l.length} та ёзув · янгиланди ${esc(D.u)}</div>`;
+    if (!D.l.length) h += '<div class="empty">Бу ойда ҳали ёзув йўқ.</div>';
+    let last = "";
+    for (const [id, day, k, amt, c, cat, note] of D.l) {
+      if (day !== last) { h += `<div class="day">${esc(day)}</div>`; last = day; }
+      const cls = k === "e" ? "exp" : "inc", sign = k === "e" ? "−" : "+";
+      h += `<div class="item"><div class="t"><b>${esc(cat || (k === "e" ? "Харажат" : "Тушум"))}</b>` +
+           (note ? `<span>${esc(note)}</span>` : "") + `</div><div class="a ${cls}">${sign}${fmt(amt, c)}</div>` +
+           `<button class="x" data-id="${id}" title="Ўчириш">✕</button></div>`;
+    }
+    el.innerHTML = h;
+    el.querySelectorAll(".x").forEach((b) => b.onclick = () => {
+      const id = +b.dataset.id;
+      const go = () => send({ a: "del", id });
+      if (tg && tg.showConfirm && tg.initData) tg.showConfirm("Шу ёзувни ўчирайми?", (yes) => yes && go());
+      else if (confirm("Шу ёзувни ўчирайми?")) go();
+    });
+  }
+
+  // ---------- report page
+  function drawRep() {
+    const el = $("rep");
+    if (!D) { el.innerHTML = '<div class="empty">Маълумот йўқ. Ботда «📒 Ҳисоб» тугмасини қайта босинг.</div>'; return; }
+    let h = `<div class="stale">${esc(D.t)} · янгиланди ${esc(D.u)}</div><div class="cards">`;
+    let any = false;
+    for (const c of ["сўм", "$"]) {
+      const [inc, exp] = D.s[c] || [0, 0];
+      if (!inc && !exp && !(c === "сўм" && !any)) continue;
+      any = true;
+      const bal = inc - exp;
+      h += `<div class="card"><div class="k">Тушум (${c})</div><div class="v inc">+${fmt(inc, c)}</div></div>` +
+           `<div class="card"><div class="k">Харажат (${c})</div><div class="v exp">−${fmt(exp, c)}</div></div>` +
+           `<div class="card wide"><div class="k">Қолдиқ (${c})</div><div class="v ${bal < 0 ? "exp" : "inc"}">${bal < 0 ? "−" : ""}${fmt(bal, c)}</div></div>`;
+    }
+    h += "</div>";
+    const ex = D.k.filter((x) => x[0] === "e");
+    if (ex.length) {
+      h += "<h3>Харажатлар категория бўйича</h3>";
+      const max = Math.max(...ex.map((x) => x[3]));
+      for (const [, c, cat, s] of ex) {
+        h += `<div class="bar"><div class="top"><span>${esc(cat)}</span><b>${fmt(s, c)}</b></div>` +
+             `<div class="track"><div class="fill" style="width:${Math.max(3, s / max * 100)}%"></div></div></div>`;
+      }
+    }
+    const inc = D.k.filter((x) => x[0] === "i");
+    if (inc.length) {
+      h += "<h3>Тушумлар манбаи</h3>";
+      for (const [, c, cat, s] of inc) h += `<div class="bar"><div class="top"><span>${esc(cat)}</span><b class="inc">${fmt(s, c)}</b></div></div>`;
+    }
+    h += `<button class="big" id="xl">📥 Excel файлни ботга юбориш</button>`;
+    el.innerHTML = h;
+    $("xl").onclick = () => send({ a: "excel", m: D.m });
+  }
+
+  document.querySelectorAll(".tabs button").forEach((t) => t.onclick = () => {
+    document.querySelectorAll(".tabs button").forEach((x) => x.classList.remove("on"));
+    document.querySelectorAll(".page").forEach((x) => x.classList.remove("on"));
+    t.classList.add("on"); page = t.dataset.page; $(page).classList.add("on");
+    if (page === "list") drawList();
+    if (page === "rep") drawRep();
+    refresh();
+  });
+
+  if (tg) { tg.ready(); tg.expand(); tg.MainButton.onClick(submit); }
+  drawChips(); refresh();
+  const start = location.hash.match(/p=(list|rep)/);
+  if (start) document.querySelector(`.tabs button[data-page=${start[1]}]`).click();
+</script>
+</body>
+</html>
