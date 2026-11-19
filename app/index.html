@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Ҳисоб-китоб</title>
+<meta name="theme-color" content="#0f1222">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ҳисоб">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+  :root {
+    --bg: #f4f5fb; --surface: #ffffff; --surface2: #eef0f7; --text: #141626; --hint: #8a8fa6; --line: #e7e9f2;
+    --brand1: #6a5cff; --brand2: #b06bff; --accent: #6a5cff;
+    --red: #ff5a6e; --red-bg: #ffe9ec; --green: #1fbf75; --green-bg: #e2f8ee;
+    --shadow: 0 8px 24px rgba(30, 30, 80, .08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0f1222; --surface: #181c31; --surface2: #222741; --text: #f2f3fa; --hint: #8f95b2; --line: #272c48;
+            --red-bg: #3a1c27; --green-bg: #12352a; --shadow: 0 8px 24px rgba(0,0,0,.35); }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+  button { font-family: inherit; cursor: pointer; }
+  button:active { transform: scale(.97); }
+
+  /* hero */
+  .hero { position: relative; padding: calc(env(safe-area-inset-top) + 16px) 18px 64px;
+    background: radial-gradient(120% 140% at 0% 0%, #8a7bff 0%, #6a5cff 40%, #3b2fa8 100%); color: #fff;
+    border-radius: 0 0 28px 28px; }
+  .hero .top { display: flex; align-items: center; justify-content: space-between; }
+  .hero h1 { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: .2px; }
+  .month { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,.16); border-radius: 14px; padding: 4px; }
+  .month button { border: 0; background: none; color: #fff; width: 30px; height: 30px; border-radius: 10px; font-size: 18px; }
+  .month span { font-weight: 600; font-size: 14px; min-width: 104px; text-align: center; }
+  .bal { margin-top: 18px; }
+  .bal .k { font-size: 13px; opacity: .8; }
+  .bal .v { font-size: 34px; font-weight: 800; letter-spacing: -.5px; margin-top: 2px; }
+  .bal .usd { font-size: 14px; opacity: .85; margin-top: 2px; min-height: 18px; }
+  .stats { position: relative; margin: -46px 16px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; z-index: 2; }
+  .stat { background: var(--surface); border-radius: 18px; padding: 12px 14px; box-shadow: var(--shadow); display: flex; gap: 10px; align-items: center; }
+  .stat i { font-style: normal; width: 36px; height: 36px; flex: 0 0 36px; border-radius: 12px; display: grid; place-items: center; font-size: 18px; font-weight: 800; }
+  .stat.in i { background: var(--green-bg); color: var(--green); }
+  .stat.out i { background: var(--red-bg); color: var(--red); }
+  .stat .k { font-size: 12px; color: var(--hint); }
+  .stat .v { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .stat > div { min-width: 0; }
+
+  main { padding: 16px 16px calc(100px + env(safe-area-inset-bottom)); }
+  .page { display: none; animation: fade .18s ease; } .page.on { display: block; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .panel { background: var(--surface); border-radius: 20px; padding: 16px; box-shadow: var(--shadow); margin-bottom: 14px; }
+  h3 { font-size: 15px; margin: 4px 0 12px; }
+  label { display: block; font-size: 12px; color: var(--hint); margin: 14px 0 6px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
+
+  .seg { display: flex; background: var(--surface2); border-radius: 14px; padding: 4px; }
+  .seg button { flex: 1; border: 0; background: none; padding: 10px 4px; border-radius: 11px; font-size: 15px; font-weight: 700; color: var(--hint); transition: .15s; }
+  .seg button.on[data-kind=expense] { background: var(--red); color: #fff; box-shadow: 0 4px 12px rgba(255,90,110,.35); }
+  .seg button.on[data-kind=income] { background: var(--green); color: #fff; box-shadow: 0 4px 12px rgba(31,191,117,.35); }
+  .row { display: flex; gap: 8px; align-items: stretch; }
+  input { width: 100%; min-width: 0; border: 0; background: var(--surface2); color: var(--text); border-radius: 14px;
+    padding: 13px 14px; font-size: 17px; outline: none; font-family: inherit; -webkit-appearance: none; appearance: none; }
+  input:focus { box-shadow: 0 0 0 2px var(--accent) inset; }
+  #sum { font-size: 30px; font-weight: 800; letter-spacing: -.5px; }
+  .cur { display: flex; background: var(--surface2); border-radius: 14px; padding: 4px; }
+  .cur button { border: 0; background: none; padding: 0 14px; border-radius: 11px; font-weight: 700; color: var(--hint); font-size: 15px; }
+  .cur button.on { background: var(--accent); color: #fff; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { border: 0; background: var(--surface2); color: var(--text); padding: 8px 13px; border-radius: 20px; font-size: 14px; font-weight: 500; }
+  .chip.on { background: linear-gradient(135deg, var(--brand1), var(--brand2)); color: #fff; }
+  .big { width: 100%; margin-top: 16px; border: 0; border-radius: 16px; padding: 16px; font-size: 17px; font-weight: 700;
+    background: linear-gradient(135deg, var(--brand1), var(--brand2)); color: #fff; box-shadow: 0 8px 20px rgba(106,92,255,.35); }
+  .big.ghost { background: var(--surface2); color: var(--text); box-shadow: none; margin-top: 10px; }
+  .big.danger { background: none; color: var(--red); border: 1.5px solid var(--red); box-shadow: none; }
+
+  .mic { display: flex; align-items: center; gap: 14px; width: 100%; border: 0; border-radius: 20px; padding: 14px;
+    background: var(--surface); color: var(--text); font-size: 15px; text-align: left; margin-bottom: 14px; box-shadow: var(--shadow); }
+  .mic b { width: 52px; height: 52px; flex: 0 0 52px; border-radius: 26px; background: linear-gradient(135deg, var(--brand1), var(--brand2));
+    color: #fff; font-size: 24px; display: grid; place-items: center; box-shadow: 0 6px 16px rgba(106,92,255,.4); }
+  .mic.rec b { animation: pulse 1s infinite; background: var(--red); }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,90,110,.6); } 50% { box-shadow: 0 0 0 12px rgba(255,90,110,0); } }
+  .mic span { font-weight: 700; } .mic span small { display: block; color: var(--hint); font-size: 13px; font-weight: 400; margin-top: 2px; }
+  .heard { background: var(--surface2); border-radius: 14px; padding: 10px 12px; font-size: 14px; color: var(--hint); margin-bottom: 12px; display: none; }
+  .editbar { display: none; background: #fff4d6; color: #7a5a00; border-radius: 14px; padding: 10px 12px; font-size: 14px; margin-bottom: 12px; }
+  @media (prefers-color-scheme: dark) { .editbar { background: #3a3420; color: #f0d27a; } }
+
+  .day { font-size: 12px; color: var(--hint); margin: 18px 4px 6px; display: flex; justify-content: space-between; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
+  .list { background: var(--surface); border-radius: 20px; box-shadow: var(--shadow); overflow: hidden; }
+  .item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  .item:last-child { border-bottom: 0; }
+  .item .ic { width: 42px; height: 42px; flex: 0 0 42px; border-radius: 14px; display: grid; place-items: center; font-size: 20px; }
+  .item.exp .ic { background: var(--red-bg); } .item.inc .ic { background: var(--green-bg); }
+  .item .t { flex: 1; min-width: 0; }
+  .item .t b { display: block; font-weight: 600; font-size: 15px; }
+  .item .t span { display: block; font-size: 13px; color: var(--hint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item .a { font-weight: 700; white-space: nowrap; font-size: 15px; }
+  .inc-t { color: var(--green); } .exp-t { color: var(--red); }
+  .empty { text-align: center; color: var(--hint); padding: 56px 20px; }
+  .empty b { display: block; font-size: 44px; margin-bottom: 8px; }
+  .note { font-size: 13px; color: var(--hint); margin-top: 12px; line-height: 1.5; }
+
+  .donut { display: flex; align-items: center; gap: 16px; }
+  .donut svg { flex: 0 0 132px; }
+  .legend { flex: 1; min-width: 0; font-size: 13px; }
+  .legend div { display: flex; align-items: center; gap: 8px; margin: 5px 0; }
+  .legend i { width: 10px; height: 10px; border-radius: 3px; flex: 0 0 10px; }
+  .legend span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar { margin: 10px 0; }
+  .bar .top { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
+  .bar .track { height: 8px; background: var(--surface2); border-radius: 4px; margin-top: 5px; overflow: hidden; }
+  .bar .fill { height: 100%; border-radius: 4px; }
+
+  nav { position: fixed; left: 12px; right: 12px; bottom: calc(10px + env(safe-area-inset-bottom)); display: flex;
+    background: color-mix(in srgb, var(--surface) 82%, transparent); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+    border-radius: 22px; box-shadow: 0 10px 30px rgba(20,20,60,.18); padding: 6px; z-index: 6; }
+  nav button { flex: 1; border: 0; background: none; color: var(--hint); padding: 7px 0 6px; font-size: 11px; font-weight: 600; border-radius: 16px; }
+  nav button b { display: block; font-size: 21px; line-height: 1.2; filter: grayscale(1); opacity: .7; }
+  nav button.on { color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  nav button.on b { filter: none; opacity: 1; }
+
+  #toast { position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(10px); background: rgba(20,22,40,.92); color: #fff;
+    padding: 11px 18px; border-radius: 14px; font-size: 14px; opacity: 0; transition: .2s; pointer-events: none; z-index: 20; max-width: 90%; text-align: center; }
+  #toast.on { opacity: 1; transform: translateX(-50%); }
+
+  .sheet-bg { position: fixed; inset: 0; background: rgba(10,10,30,.45); z-index: 30; display: none; }
+  .sheet { position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-radius: 24px 24px 0 0; padding: 10px 18px calc(18px + env(safe-area-inset-bottom));
+    z-index: 31; transform: translateY(110%); transition: transform .22s ease; }
+  .sheet.on { transform: none; }
+  .sheet .grab { width: 40px; height: 5px; border-radius: 3px; background: var(--line); margin: 0 auto 14px; }
+  .sheet h4 { margin: 0 0 4px; font-size: 18px; } .sheet p { margin: 0 0 8px; color: var(--hint); font-size: 14px; }
+
+  .install { display: none; background: var(--surface); border-radius: 20px; padding: 14px; box-shadow: var(--shadow); margin-bottom: 14px; font-size: 14px; }
+  .install b { display: block; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="top">
+    <h1>📒 Ҳисоб-китоб</h1>
+    <div class="month"><button id="prevM" aria-label="олдинги ой">‹</button><span id="monthName"></span><button id="nextM" aria-label="кейинги ой">›</button></div>
+  </div>
+  <div class="bal">
+    <div class="k">Ой қолдиғи</div>
+    <div class="v" id="balV">0 сўм</div>
+    <div class="usd" id="balUsd"></div>
+  </div>
+</div>
+<div class="stats">
+  <div class="stat in"><i>↓</i><div><div class="k">Тушум</div><div class="v" id="incV">0</div></div></div>
+  <div class="stat out"><i>↑</i><div><div class="k">Харажат</div><div class="v" id="expV">0</div></div></div>
+</div>
+
+<main>
+  <section class="page on" id="p-add">
+    <div class="install" id="installTip"></div>
+    <div class="editbar" id="editbar">✏️ Ёзувни таҳрирлаяпсиз · <u id="cancelEdit">бекор қилиш</u></div>
+    <button class="mic" id="micBtn"><b>🎤</b><span>Овоз билан киритиш<small id="micHint">«нонга 12 минг», «ойлик 5 миллион тушди»</small></span></button>
+    <div class="heard" id="heard"></div>
+    <div class="panel">
+      <div class="seg kind">
+        <button data-kind="expense" class="on">Харажат</button>
+        <button data-kind="income">Тушум</button>
+      </div>
+      <label>Сумма</label>
+      <div class="row">
+        <input id="sum" inputmode="numeric" placeholder="0" autocomplete="off">
+        <div class="cur"><button data-cur="сўм" class="on">сўм</button><button data-cur="$">$</button></div>
+      </div>
+      <label id="whatLabel">Нимага</label>
+      <div class="chips" id="chips"></div>
+      <label>Изоҳ</label>
+      <input id="note" placeholder="Масалан: нон, бензин, ойлик…" autocomplete="off" maxlength="200">
+      <label>Сана</label>
+      <input id="day" type="date">
+      <button class="big" id="save">Сақлаш</button>
+    </div>
+  </section>
+
+  <section class="page" id="p-list"></section>
+  <section class="page" id="p-rep"></section>
+
+  <section class="page" id="p-set">
+    <div class="panel">
+      <h3>Excel'га чиқариш</h3>
+      <button class="big" id="expCsv">📥 Шу ой</button>
+      <button class="big ghost" id="expAll">📥 Ҳамма ойлар</button>
+    </div>
+    <div class="panel">
+      <h3>Захира нусха</h3>
+      <button class="big ghost" id="backup">💾 Захира нусха олиш</button>
+      <button class="big ghost" id="restoreBtn">♻️ Захирадан тиклаш</button>
+      <input type="file" id="restoreFile" accept=".json,application/json,text/plain" style="display:none">
+      <div class="note">Ёзувлар фақат шу телефонда сақланади. Телефон алмаштиришдан олдин захира нусха олиб, Telegram'га юбориб қўйинг. Андроид иловадаги захирани ҳам шу ерда тиклаш мумкин.</div>
+    </div>
+    <div class="panel">
+      <h3>Хавфли</h3>
+      <button class="big danger" id="wipe">🗑 Ҳамма ёзувларни ўчириш</button>
+      <div class="note" id="stats"></div>
+    </div>
+  </section>
+</main>
+
+<nav>
+  <button data-page="add" class="on"><b>➕</b>Қўшиш</button>
+  <button data-page="list"><b>📋</b>Рўйхат</button>
+  <button data-page="rep"><b>📊</b>Ҳисобот</button>
+  <button data-page="set"><b>⚙️</b>Созлама</button>
+</nav>
+<div id="toast"></div>
+<div class="sheet-bg" id="sheetBg"></div>
+<div class="sheet" id="sheet"><div class="grab"></div><h4 id="shT"></h4><p id="shP"></p>
+  <button class="big" id="shEdit">✏️ Таҳрирлаш</button>
+  <button class="big danger" id="shDel">🗑 Ўчириш</button>
+  <button class="big ghost" id="shClose">Ёпиш</button>
+</div>
+
+<script>
+// ------------------------------------------------------------------ storage (same format as the Android app)
+const KEY = "hisob.v1";
+const MONTHS = ["", "Январ", "Феврал", "Март", "Апрел", "Май", "Июн", "Июл", "Август", "Сентябр", "Октябр", "Ноябр", "Декабр"];
+const DEF = {
+  expense: ["Овқат", "Нон", "Бозор", "Бензин", "Транспорт", "Свет", "Газ", "Сув", "Телефон", "Уй", "Болаларга", "Дори", "Кийим"],
+  income: ["Ойлик", "Савдо", "Магазиндан", "Абонемент", "Қарз қайтди", "Бошқа"]
+};
+const ICON = { "Овқат": "🍽", "Нон": "🥖", "Бозор": "🛒", "Бензин": "⛽", "Транспорт": "🚕", "Свет": "💡", "Газ": "🔥", "Сув": "💧",
+  "Телефон": "📱", "Уй": "🏠", "Болаларга": "🧸", "Дори": "💊", "Кийим": "👕", "Совға": "🎁", "Қарз": "🤝",
+  "Ойлик": "💼", "Савдо": "🏷", "Магазиндан": "🏪", "Абонемент": "🎟", "Қарз қайтди": "🤝", "Бошқа": "✨" };
+const PALETTE = ["#6a5cff", "#ff5a6e", "#ffb020", "#1fbf75", "#22b8f0", "#b06bff", "#ff7a3d", "#14b8a6", "#e85dc5", "#8a8fa6"];
+let DB = load();
+function load() {
+  try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && Array.isArray(d.entries)) return d; } catch (e) {}
+  return { entries: [], nextId: 1 };
+}
+function persist() { localStorage.setItem(KEY, JSON.stringify(DB)); }
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+
+const $ = (id) => document.getElementById(id);
+const pad = (n) => String(n).padStart(2, "0");
+const today = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+const grp = (n) => Math.abs(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+const fmt = (n, c) => (n < 0 ? "−" : "") + grp(n) + (c === "$" ? " $" : " сўм");
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+function toast(t) { const el = $("toast"); el.textContent = t; el.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), 2400); }
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+
+let month = today().slice(0, 7);
+function monthLabel(m) { const [y, mm] = m.split("-"); return `${MONTHS[+mm]} ${y}`; }
+function shiftMonth(d) { let [y, m] = month.split("-").map(Number); m += d; if (m < 1) { m = 12; y--; } if (m > 12) { m = 1; y++; } month = `${y}-${pad(m)}`; render(); }
+$("prevM").onclick = () => shiftMonth(-1);
+$("nextM").onclick = () => shiftMonth(1);
+
+// ------------------------------------------------------------------ add / edit
+let kind = "expense", cur = "сўм", chip = "", editId = null;
+function cats() {
+  const counts = {};
+  for (const e of DB.entries) if (e.kind === kind && e.cat) counts[e.cat] = (counts[e.cat] || 0) + 1;
+  const mine = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+  return [...new Set([...mine, ...DEF[kind]])].slice(0, 18);
+}
+function drawChips() {
+  $("chips").innerHTML = "";
+  $("whatLabel").textContent = kind === "expense" ? "Нимага" : "Қаердан";
+  for (const c of cats()) {
+    const b = document.createElement("button");
+    b.className = "chip" + (c === chip ? " on" : ""); b.textContent = (ICON[c] ? ICON[c] + " " : "") + c;
+    b.onclick = () => { chip = chip === c ? "" : c; drawChips(); };
+    $("chips").appendChild(b);
+  }
+}
+const amount = () => parseInt($("sum").value.replace(/\D/g, ""), 10) || 0;
+function setAmount(n) { $("sum").value = n ? grp(n) : ""; }
+$("sum").addEventListener("input", () => setAmount(amount()));
+function setKind(k) { kind = k; document.querySelectorAll(".kind button").forEach((x) => x.classList.toggle("on", x.dataset.kind === k)); }
+function setCur(c) { cur = c; document.querySelectorAll(".cur button").forEach((x) => x.classList.toggle("on", x.dataset.cur === c)); }
+document.querySelectorAll(".kind button").forEach((t) => t.onclick = () => { setKind(t.dataset.kind); chip = ""; drawChips(); });
+document.querySelectorAll(".cur button").forEach((b) => b.onclick = () => setCur(b.dataset.cur));
+function resetForm() {
+  editId = null; $("editbar").style.display = "none"; $("save").textContent = "Сақлаш";
+  setAmount(0); $("note").value = ""; $("day").value = today(); chip = ""; $("heard").style.display = "none"; drawChips();
+}
+$("cancelEdit").onclick = resetForm;
+$("save").onclick = () => {
+  const a = amount();
+  if (!a) { toast("Суммани киритинг"); $("sum").focus(); return; }
+  const e = { kind, amount: a, cur, cat: chip, note: $("note").value.trim(), day: $("day").value || today() };
+  if (editId) { Object.assign(DB.entries.find((x) => x.id === editId), e); toast("✏️ Ўзгартирилди"); }
+  else {
+    DB.entries.push({ id: DB.nextId++, created: Date.now(), ...e });
+    toast((kind === "expense" ? "Харажат" : "Тушум") + " сақланди: " + fmt(a, cur));
+  }
+  if (navigator.vibrate) navigator.vibrate(15);
+  persist(); month = e.day.slice(0, 7); resetForm(); render();
+};
+function startEdit(id) {
+  const e = DB.entries.find((x) => x.id === id); if (!e) return;
+  editId = id; setKind(e.kind); setCur(e.cur); setAmount(e.amount); chip = e.cat; $("note").value = e.note; $("day").value = e.day;
+  $("editbar").style.display = "block"; $("save").textContent = "Ўзгаришни сақлаш"; drawChips(); go("add");
+}
+
+// ------------------------------------------------------------------ voice: Android bridge → Web Speech → keyboard dictation
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null;
+function listen(lang) {
+  rec = new SR(); rec.lang = lang; rec.interimResults = false; rec.maxAlternatives = 1; rec.continuous = false;
+  $("micBtn").classList.add("rec"); $("micHint").textContent = "Гапиринг…";
+  let got = false;
+  rec.onresult = (ev) => { got = true; onVoice(ev.results[0][0].transcript); };
+  rec.onerror = (ev) => {
+    if (lang === "uz-UZ" && ev.error === "language-not-supported") { got = true; stopRec(); return listen("ru-RU"); }
+    if (ev.error === "not-allowed") toast("Микрофонга рухсат беринг (Созламалар → Safari/Chrome → Микрофон)");
+    else if (ev.error !== "no-speech" && ev.error !== "aborted") typeFallback();
+  };
+  rec.onend = () => { stopRec(); if (!got) $("micHint").textContent = "Эшитмадим — қайта босинг"; };
+  try { rec.start(); } catch (e) { stopRec(); typeFallback(); }
+}
+function stopRec() { $("micBtn").classList.remove("rec"); $("micHint").textContent = "«нонга 12 минг», «ойлик 5 миллион тушди»"; }
+function typeFallback() {
+  const t = prompt("Клавиатурадаги 🎤 тугмасини босиб гапиринг ёки ёзинг:", "");
+  if (t) onVoice(t);
+}
+$("micBtn").onclick = () => {
+  if (window.Android && Android.voice) return Android.voice();
+  if ($("micBtn").classList.contains("rec")) { try { rec.stop(); } catch (e) {} return; }
+  if (SR) listen("uz-UZ"); else typeFallback();
+};
+window.onVoiceError = () => toast("Овоз танишни ишга тушириб бўлмади");
+window.onVoice = (text) => {
+  const p = parseText(text);
+  $("heard").style.display = "block"; $("heard").textContent = "🎤 «" + text + "»";
+  if (!p.amount) { toast("Суммани эшитмадим, қайта айтинг"); return; }
+  setKind(p.kind); setCur(p.cur); setAmount(p.amount); chip = p.cat; $("note").value = p.note; drawChips();
+  toast("Текширинг ва «Сақлаш»ни босинг");
+};
+
+const NUM = {
+  "ноль": 0, "nol": 0, "бир": 1, "bir": 1, "один": 1, "одна": 1, "икки": 2, "ikki": 2, "два": 2, "две": 2, "уч": 3, "uch": 3, "три": 3,
+  "тўрт": 4, "турт": 4, "tort": 4, "to'rt": 4, "четыре": 4, "беш": 5, "besh": 5, "пять": 5, "олти": 6, "olti": 6, "шесть": 6,
+  "етти": 7, "yetti": 7, "семь": 7, "саккиз": 8, "sakkiz": 8, "восемь": 8, "тўққиз": 9, "туккиз": 9, "toqqiz": 9, "to'qqiz": 9, "девять": 9,
+  "ўн": 10, "ун": 10, "on": 10, "десять": 10, "йигирма": 20, "yigirma": 20, "двадцать": 20, "ўттиз": 30, "уттиз": 30, "o'ttiz": 30, "ottiz": 30, "тридцать": 30,
+  "қирқ": 40, "кирк": 40, "qirq": 40, "сорок": 40, "эллик": 50, "ellik": 50, "пятьдесят": 50, "олтмиш": 60, "oltmish": 60,
+  "етмиш": 70, "yetmish": 70, "саксон": 80, "sakson": 80, "тўқсон": 90, "туксон": 90, "to'qson": 90, "сто": 100, "двести": 200, "триста": 300, "пятьсот": 500
+};
+const MULT = { "юз": 100, "yuz": 100, "минг": 1e3, "ming": 1e3, "тысяч": 1e3, "тысячи": 1e3, "тысяча": 1e3, "тыс": 1e3, "k": 1e3,
+  "миллион": 1e6, "million": 1e6, "mln": 1e6, "млн": 1e6, "миллиона": 1e6, "миллионов": 1e6, "миллиард": 1e9, "milliard": 1e9 };
+const CAT_RULES = [
+  [/нон|non\b|лепёшк|хлеб/, "Нон"], [/овқат|овкат|ovqat|ош\b|osh\b|тушлик|tushlik|кафе|kafe|ресторан|самса|сомса|бургер|питса|пицца|еда/, "Овқат"],
+  [/бензин|benzin|заправ|zapravk|метан|пропан/, "Бензин"], [/такси|taksi|транспорт|автобус|метро|йўл кира|йул кира/, "Транспорт"],
+  [/свет|svet|электр|elektr/, "Свет"], [/\bгаз\b|\bgaz\b/, "Газ"], [/\bсув\b|\bsuv\b|вода/, "Сув"],
+  [/телефон|telefon|пайнет|paynet|интернет|internet|баланс/, "Телефон"], [/ижара|ijara|аренда|\bуй\b|\buy\b|квартир/, "Уй"],
+  [/бола|bola|қизим|кизим|qizim|ўғлим|углим|o'g'lim|мактаб|maktab|боғча|богча|bog'cha/, "Болаларга"],
+  [/дори|dori|аптека|apteka|дорихона|лекарств/, "Дори"], [/кийим|kiyim|оёқ кийим|кроссовка|куртка|одежд/, "Кийим"],
+  [/бозор|bozor|магазин|magazin|дўкон|дукон|do'kon|продукт|махсулот|маҳсулот|рынок/, "Бозор"],
+  [/ойлик|oylik|маош|maosh|зарплат/, "Ойлик"], [/совға|совга|sovg'a|sovga|подар/, "Совға"], [/қарз|карз|qarz|долг/, "Қарз"]
+];
+function parseText(raw) {
+  const s = " " + raw.toLowerCase().replace(/ё/g, "е").replace(/[’ʻʼ`]/g, "'") + " ";
+  const tokens = s.replace(/(\d)\s+(?=\d{3}\b)/g, "$1").match(/\d+(?:[.,]\d+)?|[a-zа-яўқғҳ'$]+/gi) || [];
+  let total = 0, curv = 0, seen = false;
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i];
+    if (/^\d/.test(t)) { curv += parseFloat(t.replace(",", ".")); seen = true; continue; }
+    if (t in NUM) { curv += NUM[t]; seen = true; continue; }
+    if (t === "ярим" || t === "yarim" || t === "пол") { curv += 0.5; seen = true; continue; }
+    const mk = Object.keys(MULT).find((k) => t === k || (k.length > 3 && t.startsWith(k)));
+    if (mk && seen) {
+      const m = MULT[mk];
+      if (m === 100) curv = (curv || 1) * 100;
+      else { total += (curv || 1) * m; curv = 0; }
+      continue;
+    }
+    if (seen && (total || curv) && !mk && !/^(сўм|сум|so'm|som|сўмга|долл|dollar|\$)/.test(t)) break;
+  }
+  const amountV = Math.round(total + curv);
+  const isUsd = /доллар|dollar|\$|usd|бакс|у\.е/.test(s);
+  const income = /тушди|tushdi|тушум|tushum|ойлик|oylik|маош|maosh|зарплат|олдим|oldim|келди|keldi|даромад|daromad|сотдим|sotdim|қайтди|кайтди|qaytdi|пришл|получил/.test(s);
+  let cat = "";
+  for (const [re, c] of CAT_RULES) if (re.test(s)) { cat = c; break; }
+  if (income) cat = cat === "Бозор" ? "Магазиндан" : (["Нон", "Овқат"].includes(cat) || !cat ? "Бошқа" : cat);
+  return { amount: amountV, cur: isUsd ? "$" : "сўм", kind: income ? "income" : "expense", cat, note: raw.trim().slice(0, 200) };
+}
+
+// ------------------------------------------------------------------ hero totals
+function monthEntries(m) { return DB.entries.filter((e) => e.day.slice(0, 7) === m).sort((a, b) => b.day.localeCompare(a.day) || b.id - a.id); }
+function sums(rows, c) {
+  const inc = rows.filter((e) => e.cur === c && e.kind === "income").reduce((a, e) => a + e.amount, 0);
+  const exp = rows.filter((e) => e.cur === c && e.kind === "expense").reduce((a, e) => a + e.amount, 0);
+  return { inc, exp, bal: inc - exp };
+}
+function drawHero() {
+  const rows = monthEntries(month), s = sums(rows, "сўм"), u = sums(rows, "$");
+  $("balV").textContent = fmt(s.bal, "сўм");
+  $("incV").textContent = "+" + fmt(s.inc, "сўм");
+  $("expV").textContent = "−" + fmt(s.exp, "сўм");
+  $("balUsd").textContent = (u.inc || u.exp) ? `Долларда: +${grp(u.inc)} / −${grp(u.exp)} = ${fmt(u.bal, "$")}` : "";
+}
+
+// ------------------------------------------------------------------ list
+function drawList() {
+  const rows = monthEntries(month), el = $("p-list");
+  if (!rows.length) { el.innerHTML = '<div class="empty"><b>🗒</b>Бу ойда ҳали ёзув йўқ.<br>«➕ Қўшиш» бўлимидан бошланг.</div>'; return; }
+  let h = "", last = "";
+  for (const e of rows) {
+    if (e.day !== last) {
+      if (last) h += "</div>";
+      const dayRows = rows.filter((x) => x.day === e.day);
+      const ex = dayRows.filter((x) => x.kind === "expense" && x.cur === "сўм").reduce((a, x) => a + x.amount, 0);
+      const [, m, d] = e.day.split("-");
+      h += `<div class="day"><span>${+d} ${MONTHS[+m]}</span><span>${ex ? "−" + fmt(ex, "сўм") : ""}</span></div><div class="list">`;
+      last = e.day;
+    }
+    const cls = e.kind === "expense" ? "exp" : "inc", sign = e.kind === "expense" ? "−" : "+";
+    const title = e.cat || (e.kind === "expense" ? "Харажат" : "Тушум");
+    h += `<div class="item ${cls}" data-id="${e.id}"><div class="ic">${ICON[e.cat] || (e.kind === "expense" ? "💸" : "💰")}</div><div class="t"><b>${esc(title)}</b>` +
+         (e.note ? `<span>${esc(e.note)}</span>` : "") + `</div><div class="a ${cls}-t">${sign}${fmt(e.amount, e.cur)}</div></div>`;
+  }
+  el.innerHTML = h + '</div><div class="note">Ёзувни босинг — таҳрирлаш ёки ўчириш.</div>';
+  el.querySelectorAll(".item").forEach((it) => it.onclick = () => openSheet(+it.dataset.id));
+}
+let sheetId = null;
+function openSheet(id) {
+  const e = DB.entries.find((x) => x.id === id); if (!e) return;
+  sheetId = id;
+  $("shT").textContent = (e.kind === "expense" ? "−" : "+") + fmt(e.amount, e.cur);
+  $("shP").textContent = [e.cat, e.note, e.day.split("-").reverse().join(".")].filter(Boolean).join(" · ");
+  $("sheetBg").style.display = "block"; requestAnimationFrame(() => $("sheet").classList.add("on"));
+}
+function closeSheet() { $("sheet").classList.remove("on"); setTimeout(() => $("sheetBg").style.display = "none", 200); }
+$("sheetBg").onclick = closeSheet; $("shClose").onclick = closeSheet;
+$("shEdit").onclick = () => { closeSheet(); startEdit(sheetId); };
+$("shDel").onclick = () => {
+  const e = DB.entries.find((x) => x.id === sheetId);
+  if (e && confirm("Шу ёзувни ўчирайми?\n" + fmt(e.amount, e.cur))) {
+    DB.entries = DB.entries.filter((x) => x.id !== sheetId); persist(); closeSheet(); render(); toast("🗑 Ўчирилди");
+  }
+};
+
+// ------------------------------------------------------------------ report
+function donut(items) {
+  const total = items.reduce((a, x) => a + x.s, 0); let acc = 0; const R = 54, C = 2 * Math.PI * R;
+  let segs = "";
+  items.forEach((x, i) => {
+    const len = x.s / total * C;
+    segs += `<circle r="${R}" cx="66" cy="66" fill="none" stroke="${PALETTE[i % PALETTE.length]}" stroke-width="20" stroke-dasharray="${len} ${C - len}" stroke-dashoffset="${-acc}" transform="rotate(-90 66 66)"/>`;
+    acc += len;
+  });
+  return `<svg width="132" height="132" viewBox="0 0 132 132">${segs}<text x="66" y="62" text-anchor="middle" font-size="11" fill="currentColor" opacity=".6">Жами</text>` +
+    `<text x="66" y="80" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">${grp(Math.round(total / 1000))}k</text></svg>`;
+}
+function drawRep() {
+  const rows = monthEntries(month), el = $("p-rep");
+  if (!rows.length) { el.innerHTML = '<div class="empty"><b>📊</b>Бу ойда ҳали ёзув йўқ.</div>'; return; }
+  const group = (k, c) => {
+    const m = {};
+    for (const e of rows.filter((x) => x.kind === k && x.cur === c)) { const key = e.cat || "Бошқа"; m[key] = (m[key] || 0) + e.amount; }
+    return Object.entries(m).map(([cat, s]) => ({ cat, s })).sort((a, b) => b.s - a.s);
+  };
+  let h = "";
+  const ex = group("expense", "сўм");
+  if (ex.length) {
+    const top = ex.slice(0, 8);
+    if (ex.length > 8) top.push({ cat: "Бошқалар", s: ex.slice(8).reduce((a, x) => a + x.s, 0) });
+    h += `<div class="panel"><h3>Харажатлар таркиби</h3><div class="donut">${donut(top)}<div class="legend">` +
+      top.map((x, i) => `<div><i style="background:${PALETTE[i % PALETTE.length]}"></i><span>${esc(x.cat)}</span><b>${grp(x.s)}</b></div>`).join("") + "</div></div></div>";
+  }
+  const inc = group("income", "сўм");
+  if (inc.length) {
+    const max = Math.max(...inc.map((x) => x.s));
+    h += '<div class="panel"><h3>Тушумлар манбаи</h3>' + inc.map((x) =>
+      `<div class="bar"><div class="top"><span>${ICON[x.cat] || "💰"} ${esc(x.cat)}</span><b class="inc-t">${fmt(x.s, "сўм")}</b></div><div class="track"><div class="fill" style="width:${Math.max(3, x.s / max * 100)}%;background:var(--green)"></div></div></div>`).join("") + "</div>";
+  }
+  const usdE = group("expense", "$"), usdI = group("income", "$");
+  if (usdE.length || usdI.length) {
+    h += '<div class="panel"><h3>Долларда</h3>' + [...usdI.map((x) => `<div class="bar"><div class="top"><span>${esc(x.cat)}</span><b class="inc-t">+${fmt(x.s, "$")}</b></div></div>`),
+      ...usdE.map((x) => `<div class="bar"><div class="top"><span>${esc(x.cat)}</span><b class="exp-t">−${fmt(x.s, "$")}</b></div></div>`)].join("") + "</div>";
+  }
+  const days = new Set(rows.filter((e) => e.kind === "expense" && e.cur === "сўм").map((e) => e.day)).size;
+  const tot = rows.filter((e) => e.kind === "expense" && e.cur === "сўм").reduce((a, e) => a + e.amount, 0);
+  if (days) h += `<div class="note">Ўртача кунлик харажат: <b>${fmt(Math.round(tot / days), "сўм")}</b> (${days} кун)</div>`;
+  el.innerHTML = h;
+}
+
+// ------------------------------------------------------------------ export / backup
+function csvFor(list) {
+  const q = (s) => `"${String(s).replace(/"/g, '""')}"`;
+  const lines = ["Сана;Тури;Категория;Изоҳ;Сумма;Валюта"];
+  for (const e of [...list].sort((a, b) => a.day.localeCompare(b.day) || a.id - b.id))
+    lines.push([e.day, e.kind === "expense" ? "Харажат" : "Тушум", q(e.cat), q(e.note), e.kind === "expense" ? -e.amount : e.amount, e.cur].join(";"));
+  return "﻿" + lines.join("\r\n");
+}
+async function shareFile(content, name, mime) {
+  if (window.Android && Android.share) return Android.share(content, name, mime);
+  const file = new File([content], name, { type: mime });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: name }); return; } catch (e) { if (e.name === "AbortError") return; }
+  }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+}
+$("expCsv").onclick = () => { const r = monthEntries(month); if (!r.length) return toast("Бу ойда ёзув йўқ"); shareFile(csvFor(r), `hisob_${month}.csv`, "text/csv"); };
+$("expAll").onclick = () => { if (!DB.entries.length) return toast("Ёзув йўқ"); shareFile(csvFor(DB.entries), `hisob_hammasi_${today()}.csv`, "text/csv"); };
+$("backup").onclick = () => shareFile(JSON.stringify({ app: "hisob", v: 1, saved: new Date().toISOString(), ...DB }), `hisob_zaxira_${today()}.json`, "application/json");
+$("restoreBtn").onclick = () => $("restoreFile").click();
+$("restoreFile").onchange = (ev) => {
+  const f = ev.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const d = JSON.parse(r.result);
+      if (!Array.isArray(d.entries)) throw new Error("format");
+      if (!confirm(`Захирада ${d.entries.length} та ёзув бор. Ҳозирги ${DB.entries.length} та ёзув ўрнига тиклайми?`)) return;
+      DB = { entries: d.entries, nextId: d.nextId || (Math.max(0, ...d.entries.map((e) => e.id)) + 1) };
+      persist(); render(); toast("♻️ Тикланди: " + d.entries.length + " та ёзув");
+    } catch (e) { toast("Бу файл захира нусха эмас"); }
+  };
+  r.readAsText(f); ev.target.value = "";
+};
+$("wipe").onclick = () => {
+  if (!DB.entries.length) return toast("Ёзув йўқ");
+  if (confirm(`Ҳамма ${DB.entries.length} та ёзув ўчирилади. Аввал захира нусха олдингизми?`) && confirm("Аниқ ўчирайми? Қайтариб бўлмайди.")) {
+    DB = { entries: [], nextId: 1 }; persist(); render(); toast("Ҳаммаси ўчирилди");
+  }
+};
+
+// ------------------------------------------------------------------ install tip (home screen)
+if (!standalone && !(window.Android)) {
+  const tip = $("installTip");
+  if (isIOS) { tip.innerHTML = "<b>📲 Телефонга ўрнатинг</b>Safari'да пастдаги <b style='display:inline'>«Улашиш» ⬆️</b> тугмасини босинг → «Бош экранга қўшиш» (На экран «Домой»). Шунда дастур алоҳида илова бўлиб очилади."; tip.style.display = "block"; }
+  window.addEventListener("beforeinstallprompt", (ev) => {
+    ev.preventDefault();
+    tip.innerHTML = "<b>📲 Телефонга ўрнатинг</b>Бош экранга илова сифатида қўшиш учун шу ерни босинг.";
+    tip.style.display = "block"; tip.onclick = () => { ev.prompt(); tip.style.display = "none"; };
+  });
+}
+if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+
+// ------------------------------------------------------------------ navigation
+let page = "add";
+function go(p) {
+  page = p;
+  document.querySelectorAll("nav button").forEach((b) => b.classList.toggle("on", b.dataset.page === p));
+  document.querySelectorAll(".page").forEach((s) => s.classList.toggle("on", s.id === "p-" + p));
+  render(); window.scrollTo(0, 0);
+}
+document.querySelectorAll("nav button").forEach((b) => b.onclick = () => go(b.dataset.page));
+window.onBack = () => { if ($("sheet").classList.contains("on")) { closeSheet(); return true; } if (page !== "add") { go("add"); return true; } if (editId) { resetForm(); return true; } return false; };
+function render() {
+  $("monthName").textContent = monthLabel(month);
+  drawHero();
+  if (page === "list") drawList();
+  if (page === "rep") drawRep();
+  if (page === "set") $("stats").textContent = `Жами ${DB.entries.length} та ёзув сақланган.`;
+}
+resetForm(); go("add");
+</script>
+</body>
+</html>
