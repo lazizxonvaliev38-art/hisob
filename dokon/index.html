@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Дўкон ҳисоби</title>
+<meta name="theme-color" content="#0b3b36">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Дўкон">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+  :root {
+    --bg: #f3f6f5; --surface: #ffffff; --surface2: #edf2f0; --text: #10201d; --hint: #7d8f8a; --line: #e3ebe8;
+    --b1: #0f9d8a; --b2: #14c79a; --accent: #0f9d8a; --amber: #f59e0b; --amber-bg: #fff4dc;
+    --red: #ef4f5f; --red-bg: #ffe8ea; --green: #12b76a; --green-bg: #e0f7ec; --blue: #3b82f6; --blue-bg: #e6efff;
+    --shadow: 0 8px 24px rgba(10, 60, 50, .08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0a1715; --surface: #12221f; --surface2: #1b2f2b; --text: #eef6f4; --hint: #8aa39d; --line: #223a35;
+      --red-bg: #3a1c22; --green-bg: #113428; --amber-bg: #3a2d10; --blue-bg: #172a4a; --shadow: 0 8px 24px rgba(0,0,0,.35); }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+  button { font-family: inherit; cursor: pointer; color: inherit; }
+  button:active { transform: scale(.97); }
+  .hero { padding: calc(env(safe-area-inset-top) + 16px) 18px 62px; color: #fff; border-radius: 0 0 28px 28px;
+    background: radial-gradient(130% 150% at 0% 0%, #19c9a0 0%, #0f9d8a 38%, #0b3b36 100%); }
+  .hero .top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .hero h1 { margin: 0; font-size: 19px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .month { display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,.16); border-radius: 14px; padding: 4px; flex: 0 0 auto; }
+  .month button { border: 0; background: none; color: #fff; width: 30px; height: 30px; border-radius: 10px; font-size: 18px; }
+  .month span { font-weight: 600; font-size: 14px; min-width: 100px; text-align: center; }
+  .big-num .k { font-size: 13px; opacity: .85; margin-top: 16px; }
+  .big-num .v { font-size: 34px; font-weight: 800; letter-spacing: -.5px; }
+  .big-num .s { font-size: 13px; opacity: .85; }
+  .tiles { margin: -44px 16px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; position: relative; z-index: 2; }
+  .tile { background: var(--surface); border-radius: 18px; padding: 12px 13px; box-shadow: var(--shadow); min-width: 0; border: 0; text-align: left; }
+  .tile .k { font-size: 12px; color: var(--hint); display: flex; align-items: center; gap: 6px; }
+  .tile .k i { font-style: normal; width: 24px; height: 24px; border-radius: 8px; display: grid; place-items: center; font-size: 13px; }
+  .tile .v { font-size: 16px; font-weight: 800; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tile .s { font-size: 11px; color: var(--hint); margin-top: 1px; }
+  .g i { background: var(--green-bg); } .r i { background: var(--red-bg); } .a i { background: var(--amber-bg); } .b i { background: var(--blue-bg); }
+  main { padding: 16px 16px calc(104px + env(safe-area-inset-bottom)); }
+  .page { display: none; animation: fade .18s ease; } .page.on { display: block; }
+  @keyframes fade { from { opacity: .3; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .panel { background: var(--surface); border-radius: 20px; padding: 16px; box-shadow: var(--shadow); margin-bottom: 14px; }
+  h3 { font-size: 15px; margin: 2px 0 12px; display: flex; justify-content: space-between; align-items: center; }
+  h3 small { font-weight: 500; color: var(--hint); font-size: 12px; }
+  label { display: block; font-size: 12px; color: var(--hint); margin: 14px 0 6px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
+  .seg { display: flex; background: var(--surface2); border-radius: 14px; padding: 4px; gap: 2px; }
+  .seg button { flex: 1; border: 0; background: none; padding: 10px 2px; border-radius: 11px; font-size: 14px; font-weight: 700; color: var(--hint); }
+  .seg button.on { color: #fff; }
+  .seg button.on[data-t=sale] { background: var(--green); box-shadow: 0 4px 12px rgba(18,183,106,.35); }
+  .seg button.on[data-t=purchase] { background: var(--blue); box-shadow: 0 4px 12px rgba(59,130,246,.35); }
+  .seg button.on[data-t=expense] { background: var(--red); box-shadow: 0 4px 12px rgba(239,79,95,.35); }
+  .row { display: flex; gap: 8px; } .row > * { flex: 1; min-width: 0; }
+  input, select { width: 100%; min-width: 0; border: 0; background: var(--surface2); color: var(--text); border-radius: 14px;
+    padding: 13px 14px; font-size: 17px; outline: none; font-family: inherit; -webkit-appearance: none; appearance: none; }
+  input:focus { box-shadow: 0 0 0 2px var(--accent) inset; }
+  .sum { font-size: 28px !important; font-weight: 800; letter-spacing: -.5px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { border: 0; background: var(--surface2); padding: 8px 13px; border-radius: 20px; font-size: 14px; font-weight: 500; }
+  .chip.on { background: linear-gradient(135deg, var(--b1), var(--b2)); color: #fff; }
+  .chip small { color: var(--hint); margin-left: 4px; } .chip.on small { color: #e6fff8; }
+  .btn { width: 100%; margin-top: 16px; border: 0; border-radius: 16px; padding: 16px; font-size: 17px; font-weight: 700; color: #fff;
+    background: linear-gradient(135deg, var(--b1), var(--b2)); box-shadow: 0 8px 20px rgba(15,157,138,.35); }
+  .btn.ghost { background: var(--surface2); color: var(--text); box-shadow: none; margin-top: 10px; }
+  .btn.danger { background: none; color: var(--red); border: 1.5px solid var(--red); box-shadow: none; margin-top: 10px; }
+  .btn.sm { padding: 10px 14px; font-size: 14px; width: auto; margin: 0; border-radius: 12px; }
+  .cart { margin-top: 10px; }
+  .ci { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 1px solid var(--line); }
+  .ci .n { flex: 1; min-width: 0; } .ci .n b { display: block; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ci .n span { font-size: 12px; color: var(--hint); }
+  .step { display: flex; align-items: center; background: var(--surface2); border-radius: 12px; }
+  .step button { border: 0; background: none; width: 34px; height: 34px; font-size: 20px; font-weight: 700; }
+  .step input { width: 46px; padding: 6px 2px; text-align: center; background: none; font-size: 16px; font-weight: 700; }
+  .total { display: flex; justify-content: space-between; font-weight: 800; font-size: 18px; margin-top: 10px; }
+  .hintline { font-size: 13px; color: var(--hint); margin-top: 8px; line-height: 1.45; }
+  .list { background: var(--surface); border-radius: 20px; box-shadow: var(--shadow); overflow: hidden; }
+  .item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  .item:last-child { border-bottom: 0; }
+  .item .ic { width: 42px; height: 42px; flex: 0 0 42px; border-radius: 14px; display: grid; place-items: center; font-size: 19px; }
+  .item .t { flex: 1; min-width: 0; } .item .t b { display: block; font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item .t span { display: block; font-size: 12px; color: var(--hint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item .a { font-weight: 700; white-space: nowrap; font-size: 15px; text-align: right; } .item .a small { display: block; font-size: 11px; color: var(--hint); font-weight: 500; }
+  .ic.sale { background: var(--green-bg); } .ic.purchase { background: var(--blue-bg); } .ic.expense { background: var(--red-bg); } .ic.prod { background: var(--amber-bg); }
+  .gt { color: var(--green); } .rt { color: var(--red); } .bt { color: var(--blue); } .at { color: var(--amber); }
+  .tiles.hide { display: none; } body.compact .hero { padding-bottom: 20px; } body.compact main { padding-top: 16px; }
+  .item .t span.badge, .badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 8px; background: var(--red-bg); color: var(--red); margin-left: 6px; vertical-align: 1px; }
+  .day { font-size: 12px; color: var(--hint); margin: 18px 4px 6px; display: flex; justify-content: space-between; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
+  .empty { text-align: center; color: var(--hint); padding: 40px 20px; } .empty b { display: block; font-size: 40px; margin-bottom: 6px; }
+  .bars { display: flex; align-items: flex-end; gap: 4px; height: 120px; margin-top: 6px; }
+  .bars div { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; min-width: 0; }
+  .bars i { display: block; width: 100%; border-radius: 6px 6px 3px 3px; background: linear-gradient(180deg, var(--b2), var(--b1)); min-height: 3px; }
+  .bars div.today i { background: linear-gradient(180deg, #ffc94d, var(--amber)); }
+  .bars span { font-size: 10px; color: var(--hint); margin-top: 4px; }
+  .kv { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 15px; gap: 10px; }
+  .kv:last-child { border-bottom: 0; } .kv b { white-space: nowrap; }
+  .donut { display: flex; align-items: center; gap: 16px; } .donut svg { flex: 0 0 124px; }
+  .legend { flex: 1; min-width: 0; font-size: 13px; } .legend div { display: flex; align-items: center; gap: 8px; margin: 5px 0; }
+  .legend i { width: 10px; height: 10px; border-radius: 3px; flex: 0 0 10px; } .legend span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .search { margin-bottom: 12px; }
+  nav { position: fixed; left: 12px; right: 12px; bottom: calc(10px + env(safe-area-inset-bottom)); display: flex; align-items: center;
+    background: color-mix(in srgb, var(--surface) 84%, transparent); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+    border-radius: 24px; box-shadow: 0 10px 30px rgba(10,40,35,.2); padding: 6px; z-index: 6; }
+  nav button { flex: 1; border: 0; background: none; color: var(--hint); padding: 6px 0 5px; font-size: 11px; font-weight: 600; border-radius: 16px; }
+  nav button b { display: block; font-size: 20px; line-height: 1.25; filter: grayscale(1); opacity: .7; }
+  nav button.on { color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); } nav button.on b { filter: none; opacity: 1; }
+  nav button.plus b { width: 46px; height: 46px; margin: -22px auto 2px; border-radius: 23px; display: grid; place-items: center; filter: none; opacity: 1;
+    background: linear-gradient(135deg, var(--b1), var(--b2)); color: #fff; font-size: 26px; box-shadow: 0 8px 18px rgba(15,157,138,.45); }
+  nav button.plus.on { background: none; }
+  #toast { position: fixed; left: 50%; bottom: calc(100px + env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(10px); background: rgba(12,30,27,.93); color: #fff;
+    padding: 11px 18px; border-radius: 14px; font-size: 14px; opacity: 0; transition: .2s; pointer-events: none; z-index: 40; max-width: 90%; text-align: center; }
+  #toast.on { opacity: 1; transform: translateX(-50%); }
+  .sheet-bg { position: fixed; inset: 0; background: rgba(5,20,18,.45); z-index: 30; display: none; }
+  .sheet { position: fixed; left: 0; right: 0; bottom: 0; max-height: 88vh; overflow: auto; background: var(--surface); border-radius: 24px 24px 0 0;
+    padding: 10px 18px calc(18px + env(safe-area-inset-bottom)); z-index: 31; transform: translateY(110%); transition: transform .22s ease; }
+  .sheet.on { transform: none; } .sheet .grab { width: 40px; height: 5px; border-radius: 3px; background: var(--line); margin: 0 auto 14px; }
+  .sheet h4 { margin: 0 0 4px; font-size: 18px; } .sheet p { margin: 0 0 6px; color: var(--hint); font-size: 14px; }
+  .install { display: none; background: var(--surface); border-radius: 20px; padding: 14px; box-shadow: var(--shadow); margin-bottom: 14px; font-size: 14px; }
+  .install b { display: block; margin-bottom: 4px; }
+  .hide { display: none !important; }
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="top">
+    <h1 id="shopName">🏪 Дўкон</h1>
+    <div class="month"><button id="prevM" aria-label="олдинги ой">‹</button><span id="monthName"></span><button id="nextM" aria-label="кейинги ой">›</button></div>
+  </div>
+  <div class="big-num"><div class="k" id="heroK">Бугунги савдо</div><div class="v" id="heroV">0 сўм</div><div class="s" id="heroS"></div></div>
+</div>
+<div class="tiles" id="tiles"></div>
+
+<main>
+  <!-- HOME -->
+  <section class="page on" id="p-home">
+    <div class="install" id="installTip"></div>
+    <div class="panel"><h3>Охирги 14 кун савдоси <small id="avgDay"></small></h3><div class="bars" id="bars"></div></div>
+    <div class="panel" id="lowPanel"><h3>Тугаб бораётган товарлар</h3><div id="lowList"></div></div>
+    <h3 style="margin:18px 4px 8px">Бугунги амаллар</h3>
+    <div id="todayList"></div>
+  </section>
+
+  <!-- ADD -->
+  <section class="page" id="p-add">
+    <div class="panel">
+      <div class="seg" id="typeSeg">
+        <button data-t="sale" class="on">💰 Савдо</button>
+        <button data-t="purchase">📦 Товар келди</button>
+        <button data-t="expense">💸 Харажат</button>
+      </div>
+
+      <!-- sale -->
+      <div id="f-sale">
+        <label>Товар танланг (ихтиёрий)</label>
+        <input id="saleSearch" placeholder="🔍 Товар номини ёзинг…" autocomplete="off">
+        <div class="chips" id="saleChips" style="margin-top:10px"></div>
+        <div class="cart" id="cart"></div>
+        <label>Савдо суммаси</label>
+        <input id="saleSum" class="sum" inputmode="numeric" placeholder="0" autocomplete="off">
+        <div class="hintline" id="saleHint">Товар танламасангиз — кунлик савдо суммасини ёзиб қўйинг. Фойда «Созлама»даги ўртача устама бўйича ҳисобланади.</div>
+        <label>Тўлов</label>
+        <div class="chips" id="payChips"></div>
+        <input id="debtor" class="hide" placeholder="Ким олди? (исм, телефон)" style="margin-top:10px" autocomplete="off">
+      </div>
+
+      <!-- purchase -->
+      <div id="f-purchase" class="hide">
+        <label>Товар номи</label>
+        <input id="pName" list="prodList" placeholder="Масалан: Coca-Cola 1.5л" autocomplete="off">
+        <datalist id="prodList"></datalist>
+        <div class="row">
+          <div><label>Миқдори</label><input id="pQty" inputmode="decimal" placeholder="1"></div>
+          <div><label>Кириш нархи (1 дона)</label><input id="pBuy" inputmode="numeric" placeholder="0"></div>
+        </div>
+        <label>Сотиш нархи (1 дона)</label>
+        <input id="pSell" inputmode="numeric" placeholder="ихтиёрий">
+        <label>Жами сумма</label>
+        <input id="pSum" class="sum" inputmode="numeric" placeholder="0">
+        <div class="hintline">Номини ёзсангиз — товар омборга қўшилади. Фақат суммани ёзсангиз ҳам бўлади (масалан «оптомдан 5 миллионлик товар»).</div>
+        <label>Кимдан (таъминотчи)</label>
+        <input id="pFrom" placeholder="ихтиёрий" autocomplete="off">
+      </div>
+
+      <!-- expense -->
+      <div id="f-expense" class="hide">
+        <label>Сумма</label>
+        <input id="eSum" class="sum" inputmode="numeric" placeholder="0">
+        <label>Нимага</label>
+        <div class="chips" id="expChips"></div>
+      </div>
+
+      <label>Изоҳ</label>
+      <input id="note" placeholder="ихтиёрий" autocomplete="off" maxlength="200">
+      <label>Сана</label>
+      <input id="day" type="date">
+      <button class="btn" id="save">Сақлаш</button>
+    </div>
+  </section>
+
+  <!-- PRODUCTS -->
+  <section class="page" id="p-prod">
+    <input id="prodSearch" class="search" placeholder="🔍 Товар қидириш…" autocomplete="off">
+    <div class="panel" id="stockPanel"></div>
+    <div id="prodListView"></div>
+    <button class="btn ghost" id="newProd">➕ Янги товар қўшиш</button>
+  </section>
+
+  <!-- REPORT -->
+  <section class="page" id="p-rep"></section>
+
+  <!-- SETTINGS -->
+  <section class="page" id="p-set">
+    <div class="panel">
+      <h3>Дўкон</h3>
+      <label>Дўкон номи</label>
+      <input id="setName" placeholder="Масалан: Ипакчи маркет">
+      <label>Ўртача устама, % (товар танламасдан ёзилган савдо учун)</label>
+      <input id="setMarkup" inputmode="decimal" placeholder="20">
+      <div class="hintline">Масалан 20% бўлса: 1 200 000 сўмлик савдодан 200 000 сўм ялпи фойда деб ҳисобланади.</div>
+      <button class="btn" id="saveSet">Сақлаш</button>
+    </div>
+    <div class="panel">
+      <h3>Excel ва захира</h3>
+      <button class="btn" id="expCsv">📥 Шу ойни Excel'га</button>
+      <button class="btn ghost" id="expProd">📥 Товарлар рўйхати (Excel)</button>
+      <button class="btn ghost" id="backup">💾 Захира нусха олиш</button>
+      <button class="btn ghost" id="restoreBtn">♻️ Захирадан тиклаш</button>
+      <input type="file" id="restoreFile" accept=".json,application/json,text/plain" style="display:none">
+      <div class="hintline">Ҳамма маълумот фақат шу телефонда сақланади. Ҳафтада бир марта захира нусха олиб, Telegram'га юбориб қўйинг.</div>
+    </div>
+    <div class="panel">
+      <h3>Хавфли</h3>
+      <button class="btn danger" id="wipe">🗑 Ҳамма маълумотни ўчириш</button>
+      <div class="hintline" id="stats"></div>
+    </div>
+  </section>
+</main>
+
+<nav>
+  <button data-page="home" class="on"><b>🏠</b>Бош</button>
+  <button data-page="prod"><b>📦</b>Товарлар</button>
+  <button data-page="add" class="plus"><b>＋</b>Қўшиш</button>
+  <button data-page="rep"><b>📊</b>Ҳисобот</button>
+  <button data-page="set"><b>⚙️</b>Созлама</button>
+</nav>
+<div id="toast"></div>
+<div class="sheet-bg" id="sheetBg"></div>
+<div class="sheet" id="sheet"><div class="grab"></div><div id="sheetBody"></div></div>
+
+<script>
+// ================================================================== data
+const KEY = "dokon.v1";
+const MONTHS = ["", "Январ", "Феврал", "Март", "Апрел", "Май", "Июн", "Июл", "Август", "Сентябр", "Октябр", "Ноябр", "Декабр"];
+const EXP_CATS = ["Ижара", "Свет", "Газ", "Сув", "Ойлик", "Солиқ", "Транспорт", "Овқат", "Интернет", "Ремонт", "Пакет", "Бошқа"];
+const EXP_ICON = { "Ижара": "🏠", "Свет": "💡", "Газ": "🔥", "Сув": "💧", "Ойлик": "👷", "Солиқ": "🧾", "Транспорт": "🚚", "Овқат": "🍽", "Интернет": "📶", "Ремонт": "🛠", "Пакет": "🛍", "Бошқа": "✨" };
+const PAYS = [["cash", "💵 Нақд"], ["card", "💳 Карта"], ["debt", "📝 Насия"]];
+const PALETTE = ["#0f9d8a", "#ef4f5f", "#f59e0b", "#3b82f6", "#a855f7", "#14c79a", "#ff7a3d", "#e85dc5", "#64748b", "#22b8f0"];
+let DB = load();
+function load() {
+  try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && Array.isArray(d.entries)) return d; } catch (e) {}
+  return { v: 1, products: [], entries: [], nextId: 1, settings: { name: "", markup: 20 } };
+}
+function persist() { localStorage.setItem(KEY, JSON.stringify(DB)); }
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+
+const $ = (id) => document.getElementById(id);
+const pad = (n) => String(n).padStart(2, "0");
+const today = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+const grp = (n) => Math.round(Math.abs(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+const fmt = (n) => (n < 0 ? "−" : "") + grp(n) + " сўм";
+const short = (n) => { const a = Math.abs(n), s = n < 0 ? "−" : ""; if (a >= 1e9) return s + (a / 1e9).toFixed(1).replace(".0", "") + " млрд"; if (a >= 1e6) return s + (a / 1e6).toFixed(1).replace(".0", "") + " млн"; if (a >= 1e3) return s + Math.round(a / 1e3) + " минг"; return s + grp(a); };
+const num = (v) => parseFloat(String(v).replace(/\s/g, "").replace(",", ".")) || 0;
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const nid = () => DB.nextId++;
+function toast(t) { const el = $("toast"); el.textContent = t; el.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), 2400); }
+function moneyInput(el) { el.addEventListener("input", () => { const v = el.value.replace(/\D/g, ""); el.value = v ? grp(+v) : ""; }); }
+const markup = () => Math.max(0, num(DB.settings.markup || 0));
+const prod = (id) => DB.products.find((p) => p.id === id);
+
+let month = today().slice(0, 7);
+const monthLabel = (m) => { const [y, mm] = m.split("-"); return `${MONTHS[+mm]} ${y}`; };
+function shiftMonth(d) { let [y, m] = month.split("-").map(Number); m += d; if (m < 1) { m = 12; y--; } if (m > 12) { m = 1; y++; } month = `${y}-${pad(m)}`; render(); }
+$("prevM").onclick = () => shiftMonth(-1); $("nextM").onclick = () => shiftMonth(1);
+
+// ================================================================== math
+const ofDay = (d) => DB.entries.filter((e) => e.day === d);
+const ofMonth = (m) => DB.entries.filter((e) => e.day.slice(0, 7) === m);
+function totals(list) {
+  const t = { sale: 0, cost: 0, purchase: 0, expense: 0, cash: 0, card: 0, debt: 0, n: 0 };
+  for (const e of list) {
+    if (e.type === "sale") { t.sale += e.amount; t.cost += e.cost; t.n++; t[e.pay || "cash"] += e.amount; }
+    if (e.type === "purchase") t.purchase += e.amount;
+    if (e.type === "expense") t.expense += e.amount;
+  }
+  t.gross = t.sale - t.cost; t.profit = t.gross - t.expense;
+  return t;
+}
+function stockValue() { // all purchases − cost of everything sold (never below 0)
+  const t = totals(DB.entries); return Math.max(0, t.purchase - t.cost);
+}
+const prodValue = () => DB.products.reduce((a, p) => a + Math.max(0, p.qty) * p.buy, 0);
+const debts = () => DB.entries.filter((e) => e.type === "sale" && e.pay === "debt" && !e.paid);
+
+// ================================================================== hero + tiles
+function drawHero() {
+  $("shopName").textContent = "🏪 " + (DB.settings.name || "Дўкон ҳисоби");
+  $("monthName").textContent = monthLabel(month);
+  const td = totals(ofDay(today())), mt = totals(ofMonth(month));
+  const isCur = month === today().slice(0, 7);
+  if (page === "home" && isCur) {
+    $("heroK").textContent = "Бугунги савдо"; $("heroV").textContent = fmt(td.sale);
+    $("heroS").textContent = td.n ? `${td.n} та савдо · фойда ≈ ${fmt(td.gross)}` : "Бугун ҳали савдо ёзилмаган";
+  } else {
+    $("heroK").textContent = monthLabel(month) + " — савдо"; $("heroV").textContent = fmt(mt.sale);
+    $("heroS").textContent = `Соф фойда: ${fmt(mt.profit)}`;
+  }
+  const dsum = debts().reduce((a, e) => a + e.amount, 0);
+  $("tiles").innerHTML =
+    tile("g", "📈", "Ойлик савдо", short(mt.sale), `ялпи фойда ${short(mt.gross)}`) +
+    tile(mt.profit >= 0 ? "g" : "r", "💎", "Соф фойда (ой)", short(mt.profit), "харажатлар айирилган") +
+    tile("b", "📦", "Товар келди (ой)", short(mt.purchase), "кирим суммаси") +
+    tile("r", "💸", "Харажат (ой)", short(mt.expense), "ижара, свет, ойлик…") +
+    tile("a", "🏬", "Омборда товар", short(stockValue()), "кириш нархида", "goProd") +
+    tile("a", "📝", "Насия (қарзлар)", short(dsum), `${debts().length} та қарздор`, "openDebts");
+  const g = $("tiles"); g.querySelector("[data-act=goProd]").onclick = () => go("prod"); g.querySelector("[data-act=openDebts]").onclick = openDebts;
+}
+const tile = (c, ic, k, v, s, act) => `<button class="tile ${c}" ${act ? `data-act="${act}"` : ""}><div class="k"><i>${ic}</i>${k}</div><div class="v">${v}</div><div class="s">${s}</div></button>`;
+
+// ================================================================== home
+function drawHome() {
+  const days = []; const d0 = new Date();
+  for (let i = 13; i >= 0; i--) { const d = new Date(d0); d.setDate(d.getDate() - i); days.push(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`); }
+  const vals = days.map((d) => totals(ofDay(d)).sale), max = Math.max(1, ...vals);
+  $("bars").innerHTML = days.map((d, i) => `<div class="${d === today() ? "today" : ""}" title="${fmt(vals[i])}"><i style="height:${Math.max(2, vals[i] / max * 100)}%"></i><span>${+d.slice(8)}</span></div>`).join("");
+  const nz = vals.filter((v) => v); $("avgDay").textContent = nz.length ? "ўртача " + short(nz.reduce((a, b) => a + b, 0) / nz.length) : "";
+  const low = DB.products.filter((p) => p.qty <= (p.min ?? 3)).sort((a, b) => a.qty - b.qty).slice(0, 6);
+  $("lowPanel").classList.toggle("hide", !low.length);
+  $("lowList").innerHTML = low.map((p) => `<div class="kv"><span>${esc(p.name)}</span><b class="${p.qty <= 0 ? "rt" : "at"}">${fq(p.qty)} ${esc(p.unit || "дона")}</b></div>`).join("");
+  $("todayList").innerHTML = entryList(ofDay(today()), "Бугун ҳали амал йўқ. Пастдаги «＋» тугмасини босинг.");
+  bindEntries($("todayList"));
+}
+const fq = (q) => (Math.round(q * 100) / 100).toString();
+function entryList(list, emptyText) {
+  if (!list.length) return `<div class="empty"><b>🧾</b>${emptyText}</div>`;
+  const rows = [...list].sort((a, b) => b.id - a.id);
+  return '<div class="list">' + rows.map(entryRow).join("") + "</div>";
+}
+function entryRow(e) {
+  let ic, title, sub = [], amt, cls;
+  if (e.type === "sale") {
+    ic = "💰"; cls = "gt"; amt = "+" + fmt(e.amount);
+    title = e.items && e.items.length ? e.items.map((it) => `${it.name} ×${fq(it.qty)}`).join(", ") : "Савдо";
+    sub.push(PAYS.find((p) => p[0] === (e.pay || "cash"))[1] + (e.pay === "debt" ? ` — ${e.debtor || "?"}${e.paid ? " ✅" : ""}` : ""));
+  } else if (e.type === "purchase") {
+    ic = "📦"; cls = "bt"; amt = fmt(e.amount);
+    title = e.pname ? `${e.pname} ×${fq(e.qty)}` : "Товар келди"; if (e.from) sub.push(e.from);
+  } else { ic = EXP_ICON[e.cat] || "💸"; cls = "rt"; amt = "−" + fmt(e.amount); title = e.cat || "Харажат"; }
+  if (e.note) sub.push(e.note);
+  return `<div class="item" data-id="${e.id}"><div class="ic ${e.type}">${ic}</div><div class="t"><b>${esc(title)}</b><span>${esc(sub.join(" · "))}</span></div><div class="a ${cls}">${amt}</div></div>`;
+}
+function bindEntries(root) { root.querySelectorAll(".item[data-id]").forEach((it) => it.onclick = () => openEntry(+it.dataset.id)); }
+
+// ================================================================== add
+let tType = "sale", pay = "cash", expCat = "", cart = [];
+document.querySelectorAll("#typeSeg button").forEach((b) => b.onclick = () => setType(b.dataset.t));
+function setType(t) {
+  tType = t;
+  document.querySelectorAll("#typeSeg button").forEach((b) => b.classList.toggle("on", b.dataset.t === t));
+  ["sale", "purchase", "expense"].forEach((x) => $("f-" + x).classList.toggle("hide", x !== t));
+  $("save").style.background = t === "sale" ? "" : t === "purchase" ? "linear-gradient(135deg,#3b82f6,#60a5fa)" : "linear-gradient(135deg,#ef4f5f,#ff8a8a)";
+}
+["saleSum", "pBuy", "pSell", "pSum", "eSum"].forEach((id) => moneyInput($(id)));
+function drawPay() {
+  $("payChips").innerHTML = PAYS.map(([k, t]) => `<button class="chip ${pay === k ? "on" : ""}" data-k="${k}">${t}</button>`).join("");
+  $("payChips").querySelectorAll("button").forEach((b) => b.onclick = () => { pay = b.dataset.k; drawPay(); });
+  $("debtor").classList.toggle("hide", pay !== "debt");
+}
+function drawExpChips() {
+  $("expChips").innerHTML = EXP_CATS.map((c) => `<button class="chip ${expCat === c ? "on" : ""}" data-c="${c}">${EXP_ICON[c]} ${c}</button>`).join("");
+  $("expChips").querySelectorAll("button").forEach((b) => b.onclick = () => { expCat = expCat === b.dataset.c ? "" : b.dataset.c; drawExpChips(); });
+}
+function drawSaleChips() {
+  const q = $("saleSearch").value.trim().toLowerCase();
+  const list = DB.products.filter((p) => !q || p.name.toLowerCase().includes(q)).sort((a, b) => (b.sold || 0) - (a.sold || 0)).slice(0, 12);
+  $("saleChips").innerHTML = list.length ? list.map((p) => `<button class="chip" data-id="${p.id}">${esc(p.name)}<small>${short(p.sell || 0)}</small></button>`).join("")
+    : (DB.products.length ? '<span class="hintline">Топилмади</span>' : '<span class="hintline">Товарлар ҳали йўқ — «📦 Товар келди» орқали қўшилади.</span>');
+  $("saleChips").querySelectorAll("button").forEach((b) => b.onclick = () => addToCart(+b.dataset.id));
+}
+$("saleSearch").addEventListener("input", drawSaleChips);
+function addToCart(id) {
+  const p = prod(id); if (!p) return;
+  if (!p.sell) { const s = prompt(`«${p.name}» сотиш нархини ёзинг (1 дона):`, ""); if (!s || !num(s)) return; p.sell = num(s); persist(); }
+  const c = cart.find((x) => x.pid === id); if (c) c.qty++; else cart.push({ pid: id, qty: 1, price: p.sell });
+  drawCart(); if (navigator.vibrate) navigator.vibrate(10);
+}
+function drawCart() {
+  if (!cart.length) { $("cart").innerHTML = ""; return; }
+  $("cart").innerHTML = cart.map((c, i) => { const p = prod(c.pid);
+    return `<div class="ci"><div class="n"><b>${esc(p.name)}</b><span>${grp(c.price)} × ${fq(c.qty)} = ${fmt(c.price * c.qty)}${p.qty < c.qty ? ' <span class="badge">омборда ' + fq(p.qty) + "</span>" : ""}</span></div>
+      <div class="step"><button data-i="${i}" data-d="-1">−</button><input data-i="${i}" value="${fq(c.qty)}" inputmode="decimal"><button data-i="${i}" data-d="1">+</button></div></div>`; }).join("") +
+    `<div class="total"><span>Жами</span><span>${fmt(cartSum())}</span></div>`;
+  $("cart").querySelectorAll("button[data-d]").forEach((b) => b.onclick = () => { const c = cart[+b.dataset.i]; c.qty = Math.max(0, c.qty + +b.dataset.d); if (!c.qty) cart.splice(+b.dataset.i, 1); drawCart(); });
+  $("cart").querySelectorAll("input[data-i]").forEach((inp) => inp.onchange = () => { const c = cart[+inp.dataset.i]; c.qty = num(inp.value); if (!c.qty) cart.splice(+inp.dataset.i, 1); drawCart(); });
+  $("saleSum").value = grp(cartSum());
+}
+const cartSum = () => cart.reduce((a, c) => a + c.price * c.qty, 0);
+// purchase: auto total
+function pAuto() { const q = num($("pQty").value || 1), b = num($("pBuy").value); if (b) $("pSum").value = grp(q * b); }
+$("pQty").addEventListener("input", pAuto); $("pBuy").addEventListener("input", pAuto);
+$("pName").addEventListener("change", () => { const p = DB.products.find((x) => x.name.toLowerCase() === $("pName").value.trim().toLowerCase()); if (p) { if (!$("pBuy").value) $("pBuy").value = grp(p.buy); if (!$("pSell").value && p.sell) $("pSell").value = grp(p.sell); pAuto(); } });
+
+function resetForm() {
+  cart = []; drawCart(); $("saleSearch").value = ""; $("saleSum").value = ""; $("debtor").value = ""; pay = "cash"; drawPay(); drawSaleChips();
+  ["pName", "pQty", "pBuy", "pSell", "pSum", "pFrom", "eSum", "note"].forEach((id) => $(id).value = ""); expCat = ""; drawExpChips();
+  $("day").value = today();
+  $("prodList").innerHTML = DB.products.map((p) => `<option value="${esc(p.name)}">`).join("");
+}
+$("save").onclick = () => {
+  const day = $("day").value || today(), note = $("note").value.trim();
+  if (tType === "sale") {
+    const amount = num($("saleSum").value);
+    if (!amount) return toast("Савдо суммасини ёзинг ёки товар танланг");
+    if (pay === "debt" && !$("debtor").value.trim()) { $("debtor").focus(); return toast("Насияга ким олганини ёзинг"); }
+    let cost, items = null;
+    if (cart.length) {
+      items = cart.map((c) => { const p = prod(c.pid); return { pid: c.pid, name: p.name, qty: c.qty, price: c.price, buy: p.buy }; });
+      cost = items.reduce((a, it) => a + it.buy * it.qty, 0);
+      const extra = amount - cartSum(); if (extra > 0) cost += extra * 100 / (100 + markup()); // typed more than cart
+      for (const it of items) { const p = prod(it.pid); p.qty -= it.qty; p.sold = (p.sold || 0) + it.qty; }
+    } else cost = Math.round(amount * 100 / (100 + markup()));
+    DB.entries.push({ id: nid(), type: "sale", day, amount, cost: Math.round(cost), items, pay, debtor: pay === "debt" ? $("debtor").value.trim() : "", note, created: Date.now() });
+    toast("💰 Савдо сақланди: " + fmt(amount));
+  } else if (tType === "purchase") {
+    const name = $("pName").value.trim(), qty = num($("pQty").value || 1), buy = num($("pBuy").value), sell = num($("pSell").value);
+    let amount = num($("pSum").value) || qty * buy;
+    if (!amount) return toast("Сумма ёки кириш нархини ёзинг");
+    let pid = null;
+    if (name) {
+      let p = DB.products.find((x) => x.name.toLowerCase() === name.toLowerCase());
+      if (!p) { p = { id: nid(), name, unit: "дона", buy: 0, sell: 0, qty: 0, min: 3, sold: 0 }; DB.products.push(p); }
+      p.qty += qty; p.buy = buy || Math.round(amount / qty); if (sell) p.sell = sell; pid = p.id;
+    }
+    DB.entries.push({ id: nid(), type: "purchase", day, amount, pid, pname: name, qty: name ? qty : 0, from: $("pFrom").value.trim(), note, created: Date.now() });
+    toast("📦 Товар кирими сақланди: " + fmt(amount));
+  } else {
+    const amount = num($("eSum").value);
+    if (!amount) return toast("Суммани ёзинг");
+    DB.entries.push({ id: nid(), type: "expense", day, amount, cat: expCat || "Бошқа", note, created: Date.now() });
+    toast("💸 Харажат сақланди: " + fmt(amount));
+  }
+  if (navigator.vibrate) navigator.vibrate(15);
+  persist(); resetForm(); month = day.slice(0, 7); go("home");
+};
+
+// ================================================================== sheet helpers
+function openSheet(html, bind) {
+  $("sheetBody").innerHTML = html; if (bind) bind($("sheetBody"));
+  $("sheetBg").style.display = "block"; requestAnimationFrame(() => $("sheet").classList.add("on"));
+}
+function closeSheet() { $("sheet").classList.remove("on"); setTimeout(() => $("sheetBg").style.display = "none", 200); }
+$("sheetBg").onclick = closeSheet;
+function openEntry(id) {
+  const e = DB.entries.find((x) => x.id === id); if (!e) return;
+  const kind = { sale: "Савдо", purchase: "Товар кирими", expense: "Харажат" }[e.type];
+  let det = `<div class="kv"><span>Сана</span><b>${e.day.split("-").reverse().join(".")}</b></div><div class="kv"><span>Сумма</span><b>${fmt(e.amount)}</b></div>`;
+  if (e.type === "sale") det += `<div class="kv"><span>Таннархи</span><b>${fmt(e.cost)}</b></div><div class="kv"><span>Фойда</span><b class="gt">${fmt(e.amount - e.cost)}</b></div>`;
+  if (e.items) det += e.items.map((it) => `<div class="kv"><span>${esc(it.name)} × ${fq(it.qty)}</span><b>${fmt(it.price * it.qty)}</b></div>`).join("");
+  if (e.note) det += `<div class="kv"><span>Изоҳ</span><b>${esc(e.note)}</b></div>`;
+  openSheet(`<h4>${kind}</h4>${det}
+    ${e.type === "sale" && e.pay === "debt" && !e.paid ? '<button class="btn" id="shPaid">✅ Қарз тўланди</button>' : ""}
+    <button class="btn danger" id="shDel">🗑 Ўчириш</button><button class="btn ghost" id="shClose">Ёпиш</button>`, (r) => {
+    r.querySelector("#shClose").onclick = closeSheet;
+    const pb = r.querySelector("#shPaid"); if (pb) pb.onclick = () => { e.paid = true; e.paidDay = today(); persist(); closeSheet(); render(); toast("✅ Қарз ёпилди"); };
+    r.querySelector("#shDel").onclick = () => {
+      if (!confirm(`${kind} ${fmt(e.amount)} — ўчирайми?`)) return;
+      if (e.type === "sale" && e.items) for (const it of e.items) { const p = prod(it.pid); if (p) { p.qty += it.qty; p.sold = Math.max(0, (p.sold || 0) - it.qty); } }
+      if (e.type === "purchase" && e.pid) { const p = prod(e.pid); if (p) p.qty -= e.qty; }
+      DB.entries = DB.entries.filter((x) => x.id !== id); persist(); closeSheet(); render(); toast("🗑 Ўчирилди");
+    };
+  });
+}
+function openDebts() {
+  const list = debts(), by = {};
+  for (const e of list) (by[e.debtor || "?"] = by[e.debtor || "?"] || []).push(e);
+  const names = Object.keys(by).sort((a, b) => by[b].reduce((s, e) => s + e.amount, 0) - by[a].reduce((s, e) => s + e.amount, 0));
+  openSheet(`<h4>📝 Насия — ${fmt(list.reduce((a, e) => a + e.amount, 0))}</h4><p>Тўлаганда «Тўлади»ни босинг.</p>` +
+    (names.length ? names.map((n) => `<div class="kv"><span><b>${esc(n)}</b><br><small style="color:var(--hint)">${by[n].map((e) => e.day.slice(8) + "." + e.day.slice(5, 7) + " — " + grp(e.amount)).join(", ")}</small></span>
+      <span style="text-align:right"><b class="at">${fmt(by[n].reduce((a, e) => a + e.amount, 0))}</b><br><button class="btn sm" data-n="${esc(n)}" style="margin-top:6px">Тўлади</button></span></div>`).join("") : '<div class="empty"><b>🎉</b>Қарздорлар йўқ</div>') +
+    '<button class="btn ghost" id="shClose">Ёпиш</button>', (r) => {
+    r.querySelector("#shClose").onclick = closeSheet;
+    r.querySelectorAll("button[data-n]").forEach((b) => b.onclick = () => {
+      const n = b.dataset.n; if (!confirm(`${n} — ҳамма қарзи тўландими?`)) return;
+      for (const e of by[n]) { e.paid = true; e.paidDay = today(); } persist(); render(); openDebts(); toast("✅ " + n + " қарзи ёпилди");
+    });
+  });
+}
+
+// ================================================================== products
+$("prodSearch").addEventListener("input", drawProducts);
+function drawProducts() {
+  const q = $("prodSearch").value.trim().toLowerCase();
+  const list = DB.products.filter((p) => !q || p.name.toLowerCase().includes(q)).sort((a, b) => a.name.localeCompare(b.name));
+  const sellVal = DB.products.reduce((a, p) => a + Math.max(0, p.qty) * (p.sell || p.buy), 0);
+  $("stockPanel").innerHTML = `<h3>Омбор <small>${DB.products.length} хил товар</small></h3>
+    <div class="kv"><span>Омбордаги товар (кириш нархида)</span><b class="at">${fmt(stockValue())}</b></div>
+    <div class="kv"><span>Рўйхатдаги товарлар (кириш нархида)</span><b>${fmt(prodValue())}</b></div>
+    <div class="kv"><span>Сотилса тушадиган пул</span><b class="gt">${fmt(sellVal)}</b></div>
+    <div class="hintline">Биринчи куни дўконда ҳозир бор товарни бир марта «＋ → 📦 Товар келди» орқали киритинг (изоҳга «бошланғич қолдиқ» деб ёзинг) — шундан кейин омбор ва фойда тўғри ҳисобланади.</div>`;
+  $("prodListView").innerHTML = list.length ? '<div class="list">' + list.map((p) =>
+    `<div class="item" data-pid="${p.id}"><div class="ic prod">📦</div><div class="t"><b>${esc(p.name)}${p.qty <= (p.min ?? 3) ? `<span class="badge">${p.qty <= 0 ? "тугади" : "кам"}</span>` : ""}</b>
+     <span>кириш ${grp(p.buy)} · сотиш ${p.sell ? grp(p.sell) : "—"}${p.sell && p.buy ? ` · устама ${Math.round((p.sell - p.buy) / p.buy * 100)}%` : ""}</span></div>
+     <div class="a">${fq(p.qty)} <small>${esc(p.unit || "дона")}</small></div></div>`).join("") + "</div>"
+    : `<div class="empty"><b>📦</b>${q ? "Топилмади" : "Товарлар ҳали йўқ.<br>«＋ Қўшиш» → «📦 Товар келди» орқали киритинг."}</div>`;
+  $("prodListView").querySelectorAll("[data-pid]").forEach((it) => it.onclick = () => editProduct(+it.dataset.pid));
+}
+$("newProd").onclick = () => editProduct(null);
+function editProduct(id) {
+  const p = id ? prod(id) : { name: "", unit: "дона", buy: 0, sell: 0, qty: 0, min: 3 };
+  openSheet(`<h4>${id ? "Товар" : "Янги товар"}</h4>
+    <label>Номи</label><input id="ep_name" value="${esc(p.name)}">
+    <div class="row"><div><label>Кириш нархи</label><input id="ep_buy" inputmode="numeric" value="${p.buy ? grp(p.buy) : ""}"></div>
+    <div><label>Сотиш нархи</label><input id="ep_sell" inputmode="numeric" value="${p.sell ? grp(p.sell) : ""}"></div></div>
+    <div class="row"><div><label>Омборда (сони)</label><input id="ep_qty" inputmode="decimal" value="${fq(p.qty)}"></div>
+    <div><label>Ўлчов</label><input id="ep_unit" value="${esc(p.unit || "дона")}"></div></div>
+    <label>Камайганда огоҳлантириш (сони)</label><input id="ep_min" inputmode="decimal" value="${fq(p.min ?? 3)}">
+    <div class="hintline">Сонини бу ерда ўзгартириш — санашда чиққан фарқни тузатиш учун. Янги товар келса «📦 Товар келди» орқали ёзинг, шунда пули ҳам ҳисобга киради.</div>
+    <button class="btn" id="ep_save">Сақлаш</button>${id ? '<button class="btn danger" id="ep_del">🗑 Товарни ўчириш</button>' : ""}<button class="btn ghost" id="shClose">Ёпиш</button>`, (r) => {
+    ["ep_buy", "ep_sell"].forEach((x) => moneyInput(r.querySelector("#" + x)));
+    r.querySelector("#shClose").onclick = closeSheet;
+    r.querySelector("#ep_save").onclick = () => {
+      const name = r.querySelector("#ep_name").value.trim(); if (!name) return toast("Номини ёзинг");
+      const np = id ? p : { id: nid(), sold: 0 };
+      Object.assign(np, { name, buy: num(r.querySelector("#ep_buy").value), sell: num(r.querySelector("#ep_sell").value), qty: num(r.querySelector("#ep_qty").value),
+        unit: r.querySelector("#ep_unit").value.trim() || "дона", min: num(r.querySelector("#ep_min").value) });
+      if (!id) DB.products.push(np); persist(); closeSheet(); render(); toast("✅ Сақланди");
+    };
+    const del = r.querySelector("#ep_del"); if (del) del.onclick = () => { if (confirm(`«${p.name}» товарини рўйхатдан ўчирайми? (ўтган савдолар қолади)`)) { DB.products = DB.products.filter((x) => x.id !== id); persist(); closeSheet(); render(); } };
+  });
+}
+
+// ================================================================== report
+function donut(items) {
+  const total = items.reduce((a, x) => a + x.s, 0) || 1; let acc = 0; const R = 50, C = 2 * Math.PI * R;
+  return `<svg width="124" height="124" viewBox="0 0 124 124">` + items.map((x, i) => { const len = x.s / total * C; const s = `<circle r="${R}" cx="62" cy="62" fill="none" stroke="${PALETTE[i % PALETTE.length]}" stroke-width="20" stroke-dasharray="${len} ${C - len}" stroke-dashoffset="${-acc}" transform="rotate(-90 62 62)"/>`; acc += len; return s; }).join("") +
+    `<text x="62" y="58" text-anchor="middle" font-size="10" fill="currentColor" opacity=".6">Жами</text><text x="62" y="75" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">${short(total)}</text></svg>`;
+}
+function drawRep() {
+  const list = ofMonth(month), t = totals(list), el = $("p-rep");
+  if (!list.length) { el.innerHTML = `<div class="empty"><b>📊</b>${monthLabel(month)} учун ҳали маълумот йўқ.</div>`; return; }
+  const [y, m] = month.split("-").map(Number), nd = new Date(y, m, 0).getDate();
+  const vals = []; for (let d = 1; d <= nd; d++) vals.push(totals(ofDay(`${month}-${pad(d)}`)).sale);
+  const max = Math.max(1, ...vals), workDays = vals.filter((v) => v).length;
+  let h = `<div class="panel"><h3>${monthLabel(month)} <small>${t.n} та савдо</small></h3>
+    <div class="kv"><span>💰 Савдо (тушум)</span><b class="gt">${fmt(t.sale)}</b></div>
+    <div class="kv"><span>🏷 Сотилган товар таннархи</span><b>${fmt(t.cost)}</b></div>
+    <div class="kv"><span>📈 Ялпи фойда</span><b class="gt">${fmt(t.gross)}</b></div>
+    <div class="kv"><span>💸 Харажатлар</span><b class="rt">−${fmt(t.expense)}</b></div>
+    <div class="kv"><span><b>💎 Соф фойда</b></span><b class="${t.profit >= 0 ? "gt" : "rt"}" style="font-size:18px">${fmt(t.profit)}</b></div>
+    <div class="kv"><span>📦 Келган товар</span><b class="bt">${fmt(t.purchase)}</b></div>
+    <div class="kv"><span>📅 Ўртача кунлик савдо</span><b>${fmt(workDays ? t.sale / workDays : 0)}</b></div>
+    <div class="kv"><span>📊 Устама (ўртача)</span><b>${t.cost ? Math.round(t.gross / t.cost * 100) : 0}%</b></div></div>`;
+  h += `<div class="panel"><h3>Кунлик савдо</h3><div class="bars" style="gap:2px">${vals.map((v, i) => `<div class="${`${month}-${pad(i + 1)}` === today() ? "today" : ""}"><i style="height:${Math.max(2, v / max * 100)}%"></i><span>${(i + 1) % 5 === 1 || i === nd - 1 ? i + 1 : ""}</span></div>`).join("")}</div></div>`;
+  h += `<div class="panel"><h3>Тўлов турлари</h3>${PAYS.map(([k, n]) => `<div class="kv"><span>${n}</span><b>${fmt(t[k])}</b></div>`).join("")}</div>`;
+  const ex = {}; for (const e of list.filter((x) => x.type === "expense")) ex[e.cat] = (ex[e.cat] || 0) + e.amount;
+  const exl = Object.entries(ex).map(([cat, s]) => ({ cat, s })).sort((a, b) => b.s - a.s);
+  if (exl.length) h += `<div class="panel"><h3>Харажатлар</h3><div class="donut">${donut(exl)}<div class="legend">${exl.map((x, i) => `<div><i style="background:${PALETTE[i % PALETTE.length]}"></i><span>${EXP_ICON[x.cat] || ""} ${esc(x.cat)}</span><b>${short(x.s)}</b></div>`).join("")}</div></div></div>`;
+  const tp = {}; for (const e of list) if (e.type === "sale" && e.items) for (const it of e.items) { const k = it.name; tp[k] = tp[k] || { q: 0, s: 0, f: 0 }; tp[k].q += it.qty; tp[k].s += it.price * it.qty; tp[k].f += (it.price - it.buy) * it.qty; }
+  const tpl = Object.entries(tp).sort((a, b) => b[1].f - a[1].f).slice(0, 10);
+  if (tpl.length) h += `<div class="panel"><h3>Энг кўп фойда берган товарлар</h3>${tpl.map(([n, v]) => `<div class="kv"><span>${esc(n)} <small style="color:var(--hint)">× ${fq(v.q)}</small></span><b class="gt">${fmt(v.f)}</b></div>`).join("")}</div>`;
+  h += `<h3 style="margin:18px 4px 8px">Ойдаги ҳамма амаллар</h3>`;
+  const days = [...new Set(list.map((e) => e.day))].sort().reverse();
+  for (const d of days) { const dt = totals(ofDay(d)); h += `<div class="day"><span>${+d.slice(8)} ${MONTHS[+d.slice(5, 7)]}</span><span>${dt.sale ? "савдо " + short(dt.sale) : ""}</span></div>` + entryList(ofDay(d), ""); }
+  el.innerHTML = h; bindEntries(el);
+}
+
+// ================================================================== settings, export, backup
+$("saveSet").onclick = () => { DB.settings.name = $("setName").value.trim(); DB.settings.markup = num($("setMarkup").value || 20); persist(); render(); toast("✅ Сақланди"); };
+function csv(rows) { return "﻿" + rows.map((r) => r.map((c) => typeof c === "number" ? c : `"${String(c ?? "").replace(/"/g, '""')}"`).join(";")).join("\r\n"); }
+async function shareFile(content, name, mime) {
+  const file = new File([content], name, { type: mime });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: name }); return; } catch (e) { if (e.name === "AbortError") return; } }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+}
+$("expCsv").onclick = () => {
+  const l = ofMonth(month).sort((a, b) => a.day.localeCompare(b.day) || a.id - b.id); if (!l.length) return toast("Бу ойда маълумот йўқ");
+  const T = { sale: "Савдо", purchase: "Товар келди", expense: "Харажат" };
+  shareFile(csv([["Сана", "Тури", "Тафсилот", "Сумма", "Таннарх", "Фойда", "Тўлов", "Изоҳ"], ...l.map((e) => [e.day, T[e.type],
+    e.type === "sale" ? (e.items ? e.items.map((i) => i.name + " x" + i.qty).join(", ") : "") : e.type === "purchase" ? (e.pname || "") + (e.from ? " / " + e.from : "") : e.cat,
+    e.amount, e.type === "sale" ? e.cost : "", e.type === "sale" ? e.amount - e.cost : "", e.type === "sale" ? ({ cash: "Нақд", card: "Карта", debt: "Насия: " + e.debtor })[e.pay] : "", e.note])]), `dokon_${month}.csv`, "text/csv");
+};
+$("expProd").onclick = () => { if (!DB.products.length) return toast("Товар йўқ");
+  shareFile(csv([["Товар", "Омборда", "Ўлчов", "Кириш нархи", "Сотиш нархи", "Қиймати (кириш)", "Сотилган"], ...DB.products.map((p) => [p.name, p.qty, p.unit, p.buy, p.sell, Math.max(0, p.qty) * p.buy, p.sold || 0])]), `tovarlar_${today()}.csv`, "text/csv"); };
+$("backup").onclick = () => shareFile(JSON.stringify({ app: "dokon", saved: new Date().toISOString(), ...DB }), `dokon_zaxira_${today()}.json`, "application/json");
+$("restoreBtn").onclick = () => $("restoreFile").click();
+$("restoreFile").onchange = (ev) => {
+  const f = ev.target.files[0]; if (!f) return; const r = new FileReader();
+  r.onload = () => { try { const d = JSON.parse(r.result); if (!Array.isArray(d.entries) || !Array.isArray(d.products)) throw 0;
+      if (!confirm(`Захирада ${d.entries.length} та амал ва ${d.products.length} та товар бор. Ҳозиргисининг ўрнига тиклайми?`)) return;
+      DB = { v: 1, products: d.products, entries: d.entries, nextId: d.nextId || 1, settings: d.settings || { name: "", markup: 20 } }; persist(); render(); toast("♻️ Тикланди");
+    } catch (e) { toast("Бу файл дўкон захираси эмас"); } };
+  r.readAsText(f); ev.target.value = "";
+};
+$("wipe").onclick = () => { if (confirm("Ҳамма савдо, товар ва харажатлар ўчирилади. Аввал захира олдингизми?") && confirm("Аниқ ўчирайми? Қайтариб бўлмайди.")) { localStorage.removeItem(KEY); DB = load(); persist(); render(); toast("Ўчирилди"); } };
+
+// ================================================================== install tip + offline
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+if (!standalone) {
+  const tip = $("installTip");
+  if (isIOS) { tip.innerHTML = "<b>📲 Телефонга ўрнатинг</b>Safari'да пастдаги «Улашиш» ⬆️ тугмасини босинг → «На экран Домой» → «Добавить»."; tip.style.display = "block"; }
+  window.addEventListener("beforeinstallprompt", (ev) => { ev.preventDefault(); tip.innerHTML = "<b>📲 Телефонга ўрнатинг</b>Бош экранга илова қилиб қўшиш учун шу ерни босинг."; tip.style.display = "block"; tip.onclick = () => { ev.prompt(); tip.style.display = "none"; }; });
+}
+if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+
+// ================================================================== navigation
+let page = "home";
+function go(p) {
+  page = p;
+  document.querySelectorAll("nav button").forEach((b) => b.classList.toggle("on", b.dataset.page === p));
+  document.querySelectorAll(".page").forEach((s) => s.classList.toggle("on", s.id === "p-" + p));
+  const showTiles = p === "home" || p === "rep";
+  $("tiles").classList.toggle("hide", !showTiles); document.body.classList.toggle("compact", !showTiles);
+  render(); window.scrollTo(0, 0);
+}
+document.querySelectorAll("nav button").forEach((b) => b.onclick = () => go(b.dataset.page));
+function render() {
+  drawHero();
+  if (page === "home") drawHome();
+  if (page === "prod") drawProducts();
+  if (page === "rep") drawRep();
+  if (page === "add") drawSaleChips();
+  if (page === "set") { $("setName").value = DB.settings.name || ""; $("setMarkup").value = DB.settings.markup ?? 20;
+    $("stats").textContent = `Жами ${DB.entries.length} та амал, ${DB.products.length} та товар сақланган.`; }
+}
+drawPay(); drawExpChips(); resetForm(); setType("sale"); go("home");
+</script>
+</body>
+</html>
