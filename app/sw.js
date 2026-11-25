@@ -1,5 +1,5 @@
-// Offline cache: the app works without internet after the first open.
-const CACHE = "hisob-pwa-v1";
+﻿// Offline cache: the app works without internet after the first open.
+const CACHE = "hisob-pwa-v2";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener("activate", (e) => {

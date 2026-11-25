@@ -62,6 +62,12 @@
   .seg button { flex: 1; border: 0; background: none; padding: 10px 4px; border-radius: 11px; font-size: 15px; font-weight: 700; color: var(--hint); transition: .15s; }
   .seg button.on[data-kind=expense] { background: var(--red); color: #fff; box-shadow: 0 4px 12px rgba(255,90,110,.35); }
   .seg button.on[data-kind=income] { background: var(--green); color: #fff; box-shadow: 0 4px 12px rgba(31,191,117,.35); }
+  .seg.pay button.on { background: var(--accent); color: #fff; box-shadow: 0 4px 12px rgba(106,92,255,.3); }
+  .item .t .paytag { display: inline-block !important; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 8px; background: var(--surface2); color: var(--hint); margin-left: 6px; vertical-align: 1px; }
+  .paybox { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .paybox > div { background: var(--surface2); border-radius: 14px; padding: 10px 12px; font-size: 13px; }
+  .paybox b { display: block; font-size: 14px; margin-bottom: 4px; }
+  .paybox .bl { font-weight: 800; font-size: 15px; margin-top: 4px; }
   .row { display: flex; gap: 8px; align-items: stretch; }
   input { width: 100%; min-width: 0; border: 0; background: var(--surface2); color: var(--text); border-radius: 14px;
     padding: 13px 14px; font-size: 17px; outline: none; font-family: inherit; -webkit-appearance: none; appearance: none; }
@@ -147,6 +153,7 @@
   <div class="bal">
     <div class="k">Ой қолдиғи</div>
     <div class="v" id="balV">0 сўм</div>
+    <div class="usd" id="balPay"></div>
     <div class="usd" id="balUsd"></div>
   </div>
 </div>
@@ -159,7 +166,7 @@
   <section class="page on" id="p-add">
     <div class="install" id="installTip"></div>
     <div class="editbar" id="editbar">✏️ Ёзувни таҳрирлаяпсиз · <u id="cancelEdit">бекор қилиш</u></div>
-    <button class="mic" id="micBtn"><b>🎤</b><span>Овоз билан киритиш<small id="micHint">«нонга 12 минг», «ойлик 5 миллион тушди»</small></span></button>
+    <button class="mic" id="micBtn"><b>🎤</b><span>Овоз билан киритиш<small id="micHint">«нонга 12 минг», «картадан бензин 200 минг»</small></span></button>
     <div class="heard" id="heard"></div>
     <div class="panel">
       <div class="seg kind">
@@ -170,6 +177,11 @@
       <div class="row">
         <input id="sum" inputmode="numeric" placeholder="0" autocomplete="off">
         <div class="cur"><button data-cur="сўм" class="on">сўм</button><button data-cur="$">$</button></div>
+      </div>
+      <label>Тўлов тури</label>
+      <div class="seg pay">
+        <button data-pay="naqd" class="on">💵 Нақд</button>
+        <button data-pay="karta">💳 Карта</button>
       </div>
       <label id="whatLabel">Нимага</label>
       <div class="chips" id="chips"></div>
@@ -256,7 +268,9 @@ $("prevM").onclick = () => shiftMonth(-1);
 $("nextM").onclick = () => shiftMonth(1);
 
 // ------------------------------------------------------------------ add / edit
-let kind = "expense", cur = "сўм", chip = "", editId = null;
+let kind = "expense", cur = "сўм", chip = "", editId = null, pay = localStorage.getItem("hisob.pay") || "naqd";
+const PAY = { naqd: "💵 Нақд", karta: "💳 Карта" };
+const payOf = (e) => e.pay === "karta" ? "karta" : "naqd";
 function cats() {
   const counts = {};
   for (const e of DB.entries) if (e.kind === kind && e.cat) counts[e.cat] = (counts[e.cat] || 0) + 1;
@@ -280,15 +294,19 @@ function setKind(k) { kind = k; document.querySelectorAll(".kind button").forEac
 function setCur(c) { cur = c; document.querySelectorAll(".cur button").forEach((x) => x.classList.toggle("on", x.dataset.cur === c)); }
 document.querySelectorAll(".kind button").forEach((t) => t.onclick = () => { setKind(t.dataset.kind); chip = ""; drawChips(); });
 document.querySelectorAll(".cur button").forEach((b) => b.onclick = () => setCur(b.dataset.cur));
+function setPay(p) { pay = p === "karta" ? "karta" : "naqd"; document.querySelectorAll(".pay button").forEach((x) => x.classList.toggle("on", x.dataset.pay === pay)); }
+document.querySelectorAll(".pay button").forEach((b) => b.onclick = () => setPay(b.dataset.pay));
 function resetForm() {
   editId = null; $("editbar").style.display = "none"; $("save").textContent = "Сақлаш";
+  setPay(localStorage.getItem("hisob.pay") || "naqd");
   setAmount(0); $("note").value = ""; $("day").value = today(); chip = ""; $("heard").style.display = "none"; drawChips();
 }
 $("cancelEdit").onclick = resetForm;
 $("save").onclick = () => {
   const a = amount();
   if (!a) { toast("Суммани киритинг"); $("sum").focus(); return; }
-  const e = { kind, amount: a, cur, cat: chip, note: $("note").value.trim(), day: $("day").value || today() };
+  const e = { kind, amount: a, cur, pay, cat: chip, note: $("note").value.trim(), day: $("day").value || today() };
+  if (!editId) localStorage.setItem("hisob.pay", pay);
   if (editId) { Object.assign(DB.entries.find((x) => x.id === editId), e); toast("✏️ Ўзгартирилди"); }
   else {
     DB.entries.push({ id: DB.nextId++, created: Date.now(), ...e });
@@ -299,7 +317,7 @@ $("save").onclick = () => {
 };
 function startEdit(id) {
   const e = DB.entries.find((x) => x.id === id); if (!e) return;
-  editId = id; setKind(e.kind); setCur(e.cur); setAmount(e.amount); chip = e.cat; $("note").value = e.note; $("day").value = e.day;
+  editId = id; setKind(e.kind); setCur(e.cur); setPay(payOf(e)); setAmount(e.amount); chip = e.cat; $("note").value = e.note; $("day").value = e.day;
   $("editbar").style.display = "block"; $("save").textContent = "Ўзгаришни сақлаш"; drawChips(); go("add");
 }
 
@@ -319,7 +337,7 @@ function listen(lang) {
   rec.onend = () => { stopRec(); if (!got) $("micHint").textContent = "Эшитмадим — қайта босинг"; };
   try { rec.start(); } catch (e) { stopRec(); typeFallback(); }
 }
-function stopRec() { $("micBtn").classList.remove("rec"); $("micHint").textContent = "«нонга 12 минг», «ойлик 5 миллион тушди»"; }
+function stopRec() { $("micBtn").classList.remove("rec"); $("micHint").textContent = "«нонга 12 минг», «картадан бензин 200 минг»"; }
 function typeFallback() {
   const t = prompt("Клавиатурадаги 🎤 тугмасини босиб гапиринг ёки ёзинг:", "");
   if (t) onVoice(t);
@@ -334,7 +352,7 @@ window.onVoice = (text) => {
   const p = parseText(text);
   $("heard").style.display = "block"; $("heard").textContent = "🎤 «" + text + "»";
   if (!p.amount) { toast("Суммани эшитмадим, қайта айтинг"); return; }
-  setKind(p.kind); setCur(p.cur); setAmount(p.amount); chip = p.cat; $("note").value = p.note; drawChips();
+  setKind(p.kind); setCur(p.cur); if (p.pay) setPay(p.pay); setAmount(p.amount); chip = p.cat; $("note").value = p.note; drawChips();
   toast("Текширинг ва «Сақлаш»ни босинг");
 };
 
@@ -382,7 +400,9 @@ function parseText(raw) {
   let cat = "";
   for (const [re, c] of CAT_RULES) if (re.test(s)) { cat = c; break; }
   if (income) cat = cat === "Бозор" ? "Магазиндан" : (["Нон", "Овқат"].includes(cat) || !cat ? "Бошқа" : cat);
-  return { amount: amountV, cur: isUsd ? "$" : "сўм", kind: income ? "income" : "expense", cat, note: raw.trim().slice(0, 200) };
+  const payV = /карта|karta|карточк|пластик|plastik|терминал|terminal|клик|click|пэйми|payme|узум|uzum|перевод|o'tkaz|ўтказ|утказ|хумо|humo|узкард|uzcard/.test(s) ? "karta"
+    : /нақд|накд|naqd|налич|қўлга|кулга/.test(s) ? "naqd" : "";
+  return { amount: amountV, cur: isUsd ? "$" : "сўм", kind: income ? "income" : "expense", pay: payV, cat, note: raw.trim().slice(0, 200) };
 }
 
 // ------------------------------------------------------------------ hero totals
@@ -395,6 +415,8 @@ function sums(rows, c) {
 function drawHero() {
   const rows = monthEntries(month), s = sums(rows, "сўм"), u = sums(rows, "$");
   $("balV").textContent = fmt(s.bal, "сўм");
+  const pb = (p) => { const r = rows.filter((e) => payOf(e) === p); return sums(r, "сўм").bal; };
+  $("balPay").textContent = rows.length ? `💵 Нақд: ${fmt(pb("naqd"), "сўм")}  ·  💳 Карта: ${fmt(pb("karta"), "сўм")}` : "";
   $("incV").textContent = "+" + fmt(s.inc, "сўм");
   $("expV").textContent = "−" + fmt(s.exp, "сўм");
   $("balUsd").textContent = (u.inc || u.exp) ? `Долларда: +${grp(u.inc)} / −${grp(u.exp)} = ${fmt(u.bal, "$")}` : "";
@@ -416,7 +438,7 @@ function drawList() {
     }
     const cls = e.kind === "expense" ? "exp" : "inc", sign = e.kind === "expense" ? "−" : "+";
     const title = e.cat || (e.kind === "expense" ? "Харажат" : "Тушум");
-    h += `<div class="item ${cls}" data-id="${e.id}"><div class="ic">${ICON[e.cat] || (e.kind === "expense" ? "💸" : "💰")}</div><div class="t"><b>${esc(title)}</b>` +
+    h += `<div class="item ${cls}" data-id="${e.id}"><div class="ic">${ICON[e.cat] || (e.kind === "expense" ? "💸" : "💰")}</div><div class="t"><b>${esc(title)}<span class="paytag" style="display:inline">${payOf(e) === "karta" ? "💳 карта" : "💵 нақд"}</span></b>` +
          (e.note ? `<span>${esc(e.note)}</span>` : "") + `</div><div class="a ${cls}-t">${sign}${fmt(e.amount, e.cur)}</div></div>`;
   }
   el.innerHTML = h + '</div><div class="note">Ёзувни босинг — таҳрирлаш ёки ўчириш.</div>';
@@ -427,7 +449,7 @@ function openSheet(id) {
   const e = DB.entries.find((x) => x.id === id); if (!e) return;
   sheetId = id;
   $("shT").textContent = (e.kind === "expense" ? "−" : "+") + fmt(e.amount, e.cur);
-  $("shP").textContent = [e.cat, e.note, e.day.split("-").reverse().join(".")].filter(Boolean).join(" · ");
+  $("shP").textContent = [PAY[payOf(e)], e.cat, e.note, e.day.split("-").reverse().join(".")].filter(Boolean).join(" · ");
   $("sheetBg").style.display = "block"; requestAnimationFrame(() => $("sheet").classList.add("on"));
 }
 function closeSheet() { $("sheet").classList.remove("on"); setTimeout(() => $("sheetBg").style.display = "none", 200); }
@@ -461,6 +483,11 @@ function drawRep() {
     return Object.entries(m).map(([cat, s]) => ({ cat, s })).sort((a, b) => b.s - a.s);
   };
   let h = "";
+  const pm = (p, k) => rows.filter((e) => e.cur === "сўм" && e.kind === k && payOf(e) === p).reduce((a, e) => a + e.amount, 0);
+  h += '<div class="panel"><h3>Нақд ва карта</h3><div class="paybox">' + ["naqd", "karta"].map((p) => {
+    const i = pm(p, "income"), x = pm(p, "expense");
+    return `<div><b>${PAY[p]}</b><span class="inc-t">+${fmt(i, "сўм")}</span><br><span class="exp-t">−${fmt(x, "сўм")}</span><div class="bl">${fmt(i - x, "сўм")}</div></div>`;
+  }).join("") + "</div></div>";
   const ex = group("expense", "сўм");
   if (ex.length) {
     const top = ex.slice(0, 8);
@@ -488,9 +515,9 @@ function drawRep() {
 // ------------------------------------------------------------------ export / backup
 function csvFor(list) {
   const q = (s) => `"${String(s).replace(/"/g, '""')}"`;
-  const lines = ["Сана;Тури;Категория;Изоҳ;Сумма;Валюта"];
+  const lines = ["Сана;Тури;Тўлов;Категория;Изоҳ;Сумма;Валюта"];
   for (const e of [...list].sort((a, b) => a.day.localeCompare(b.day) || a.id - b.id))
-    lines.push([e.day, e.kind === "expense" ? "Харажат" : "Тушум", q(e.cat), q(e.note), e.kind === "expense" ? -e.amount : e.amount, e.cur].join(";"));
+    lines.push([e.day, e.kind === "expense" ? "Харажат" : "Тушум", payOf(e) === "karta" ? "Карта" : "Нақд", q(e.cat), q(e.note), e.kind === "expense" ? -e.amount : e.amount, e.cur].join(";"));
   return "﻿" + lines.join("\r\n");
 }
 async function shareFile(content, name, mime) {
